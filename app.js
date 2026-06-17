@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const itemSelect = document.getElementById('itemSelect');
     const itemSearch = document.getElementById('itemSearch');
+    const itemsDropdown = document.getElementById('itemsDropdown');
     const mainQtyDisplay = document.getElementById('mainQty');
     const addBtn = document.getElementById('addBtn');
     const clearBtn = document.getElementById('clearBtn');
@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let buildQueue = {}; // Format: { id: quantity }
     let currentMainQty = 1;
+    let highlightedIndex = -1;
 
     // Gestion des sections pliantes
     document.querySelectorAll('.collapsible').forEach(header => {
@@ -33,46 +34,107 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     }
 
-    // Remplir le select au démarrage
-    function populateSelect(filter = '') {
-        const currentVal = itemSelect.value;
-        itemSelect.innerHTML = '';
+    // Récupérer l'ID à partir du nom affiché
+    function getSelectedId() {
+        const val = itemSearch.value;
+        return Object.keys(DICTIONARY).find(id => DICTIONARY[id] === val);
+    }
+
+    function updateHighlight() {
+        const items = itemsDropdown.querySelectorAll('.dropdown-item');
+        items.forEach((item, index) => {
+            item.classList.toggle('active', index === highlightedIndex);
+            if (index === highlightedIndex) {
+                item.scrollIntoView({ block: 'nearest' });
+            }
+        });
+    }
+
+    // Gérer l'affichage de la liste personnalisée
+    function renderDropdown(filter = '') {
+        itemsDropdown.innerHTML = '';
         const filterLower = filter.toLowerCase();
+        
+        highlightedIndex = -1;
 
         const craftables = Object.values(ITEMS)
             .filter(item => item.recipe)
-            .filter(item => {
-                const name = (DICTIONARY[item.id] || item.slug).toLowerCase();
-                return name.includes(filterLower);
-            })
+            .filter(item => (DICTIONARY[item.id] || '').toLowerCase().includes(filterLower))
             .sort((a, b) => (DICTIONARY[a.id] || '').localeCompare(DICTIONARY[b.id] || ''));
 
-        if (craftables.length === 0 && filter === '') {
-            // Sécurité si aucune recette n'est trouvée
-        }
-
         craftables.forEach(item => {
-            const opt = document.createElement('option');
-            opt.value = item.id;
-            opt.textContent = DICTIONARY[item.id] || item.slug;
-            itemSelect.appendChild(opt);
+            const name = DICTIONARY[item.id] || item.slug;
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.textContent = name;
+            div.addEventListener('click', () => {
+                itemSearch.value = name;
+                syncSelection();
+                itemsDropdown.classList.add('hidden');
+                highlightedIndex = -1;
+            });
+            itemsDropdown.appendChild(div);
         });
-        if (currentVal) itemSelect.value = currentVal;
+
+        itemsDropdown.classList.toggle('hidden', craftables.length === 0);
     }
 
+    const syncSelection = () => {
+        const id = getSelectedId();
+        if (!id) {
+            mainQtyDisplay.style.opacity = "0.5";
+            currentMainQty = 0;
+            mainQtyDisplay.innerHTML = `<strong>0</strong>`;
+            return;
+        }
+        mainQtyDisplay.style.opacity = "1";
+        currentMainQty = ITEMS[id]?.stackQty || 1;
+        mainQtyDisplay.innerHTML = `<strong>${currentMainQty}</strong>`;
+    };
+
     function initSelect() {
-        const resetMainQty = () => {
-            const id = itemSelect.value;
-            if (!id) return;
-            currentMainQty = ITEMS[id]?.stackQty || 1;
-            mainQtyDisplay.innerHTML = `<strong>${currentMainQty}</strong>`;
-        };
+        // Ouvrir au clic
+        itemSearch.addEventListener('click', () => {
+            renderDropdown(itemSearch.value);
+        });
 
-        populateSelect();
-        resetMainQty();
+        // Filtrer à la saisie
+        itemSearch.addEventListener('input', (e) => {
+            renderDropdown(e.target.value);
+            syncSelection();
+        });
 
-        itemSelect.addEventListener('change', resetMainQty);
-        itemSearch.addEventListener('input', (e) => populateSelect(e.target.value));
+        // Navigation clavier
+        itemSearch.addEventListener('keydown', (e) => {
+            const items = itemsDropdown.querySelectorAll('.dropdown-item');
+            const isHidden = itemsDropdown.classList.contains('hidden');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+                updateHighlight();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                updateHighlight();
+            } else if (e.key === 'Enter') {
+                if (!isHidden && highlightedIndex >= 0) {
+                    e.preventDefault();
+                    items[highlightedIndex].click();
+                } else if (isHidden && itemSearch.value) {
+                    addBtn.click();
+                }
+            } else if (e.key === 'Escape') {
+                itemsDropdown.classList.add('hidden');
+            }
+        });
+
+        // Fermer la liste si on clique ailleurs
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.recipe-search-box')) {
+                itemsDropdown.classList.add('hidden');
+            }
+        });
     }
 
     // Calcul récursif pour remonter aux ressources de base
@@ -175,11 +237,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Événements
     addBtn.addEventListener('click', () => {
-        updateQueue(itemSelect.value, currentMainQty);
+        const id = getSelectedId();
+        if (id) {
+            updateQueue(id, currentMainQty);
+            itemSearch.value = ""; // Reset après ajout pour l'UX
+            syncSelection(); // Déclenche la réinitialisation visuelle et de valeur
+        }
     });
 
     const updateMainQty = (multiplier) => {
-        const id = itemSelect.value;
+        const id = getSelectedId();
+        if (!id) return;
+        
         const stackQty = ITEMS[id]?.stackQty || 1;
         currentMainQty = Math.max(stackQty, currentMainQty + (multiplier * stackQty));
         mainQtyDisplay.innerHTML = `<strong>${currentMainQty}</strong>`;

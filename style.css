@@ -114,10 +114,7 @@ button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* Recherche & Filtrage */
 .search-input {
-    border-bottom: none;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    height: 32px !important;
+    width: 100%;
 }
 
 /* Utilitaires de visibilité */
@@ -174,7 +171,41 @@ button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .item-name { font-weight: 500; }
 
-.recipe-search-box { display: flex; flex-direction: column; }
+.recipe-search-box {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-top: none;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: var(--shadow);
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.dropdown-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-alt);
+}
+
+.dropdown-item.active {
+    background-color: var(--bg-alt);
+    border-left: 3px solid var(--primary);
+}
 
 .ing-search {
     height: 24px !important;
@@ -182,9 +213,4 @@ button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
     border-bottom: none;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-}
-
-.ing-select, #itemSelect {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
 }
