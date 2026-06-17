@@ -12,8 +12,8 @@
         .admin-table input:not([type="checkbox"]), .admin-table select { width: 100%; height: 32px; border: 1px solid #ccc; padding: 2px 5px; box-sizing: border-box; }
         .admin-table input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; display: block; margin: 0 auto; }
         .recipe-container { display: flex; flex-direction: column; gap: 5px; }
-        .ingredient-row { display: grid; grid-template-columns: 2.5fr 0.8fr auto; gap: 5px; align-items: flex-start; background: #f8fafc; padding: 5px; border-radius: 4px; border: 1px solid var(--border); }
-        .ingredient-row select, .ingredient-row input { height: 28px !important; font-size: 0.85rem; }
+        .ingredient-row { display: grid; grid-template-columns: 2.5fr 80px auto; gap: 5px; align-items: flex-start; background: #f8fafc; padding: 5px; border-radius: 4px; border: 1px solid var(--border); }
+        .ingredient-row input { height: 28px !important; font-size: 0.85rem; }
         .add-ing-btn { background: #64748b; font-size: 0.75rem; padding: 4px 8px; margin-top: 5px; width: 100%; }
         .add-ing-btn:hover { background: #475569; }
         .export-area { width: 100%; height: 300px; font-family: monospace; margin-top: 1rem; padding: 1rem; background: #1e293b; color: #f8fafc; border-radius: 8px; }
@@ -65,29 +65,37 @@
         const generateBtn = document.getElementById('generateBtn');
         const exportArea = document.getElementById('exportTextarea');
 
-        // Met à jour tous les selects d'ingrédients existants dans la table
-        function refreshAllSelects() {
-            document.querySelectorAll('.ingredient-row').forEach(row => {
-                const select = row.querySelector('.ing-select');
-                const searchInput = row.querySelector('.ing-search');
-                const filter = searchInput ? searchInput.value.toLowerCase() : "";
-                
-                const currentValue = select.value;
-                const container = select.closest('.recipe-container');
-                const targetId = container.id.split('-')[1];
+        // Gère l'affichage du dropdown pour un ingrédient spécifique
+        function renderIngDropdown(input, dropdown, hiddenInput, filter = '', targetId) {
+            dropdown.innerHTML = '';
+            const filterLower = filter.toLowerCase();
 
-                let options = '<option value="">-- Choisir --</option>';
-                Object.values(ITEMS).forEach(it => {
-                    if (it.id == targetId) return; 
-                    const name = DICTIONARY[it.id] || it.slug || `Item ${it.id}`;
-                    if (!filter || name.toLowerCase().includes(filter)) {
-                        options += `<option value="${it.id}" ${it.id == currentValue ? 'selected' : ''}>${name}</option>`;
-                    }
+            const items = Object.values(ITEMS)
+                .filter(it => it.id != targetId) // Ne pas s'inclure soi-même dans sa recette
+                .filter(it => (DICTIONARY[it.id] || '').toLowerCase().includes(filterLower))
+                .sort((a, b) => (DICTIONARY[a.id] || '').localeCompare(DICTIONARY[b.id] || ''));
+
+            items.forEach(it => {
+                const name = DICTIONARY[it.id] || it.slug;
+                const div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.textContent = name;
+                div.style.padding = '5px 10px';
+                div.style.fontSize = '0.8rem';
+                
+                div.addEventListener('click', () => {
+                    input.value = name;
+                    hiddenInput.value = it.id;
+                    dropdown.classList.add('hidden');
                 });
-                select.innerHTML = options;
-                if (currentValue) select.value = currentValue;
+                dropdown.appendChild(div);
             });
+
+            dropdown.classList.toggle('hidden', items.length === 0);
         }
+
+        // Ancienne fonction conservée pour compatibilité mais vidée car remplacée par la logique combo
+        function refreshAllSelects() {}
 
         // Initialisation de la table
         function renderAdminTable() {
@@ -140,11 +148,9 @@
             // Synchronisation dynamique des données lors de la saisie
             tr.querySelector('.input-label').addEventListener('input', (e) => {
                 DICTIONARY[id] = e.target.value;
-                refreshAllSelects();
             });
             tr.querySelector('.input-slug').addEventListener('input', (e) => {
                 if (ITEMS[id]) ITEMS[id].slug = e.target.value;
-                refreshAllSelects();
             });
 
             // Toggle stack qty input
@@ -175,27 +181,30 @@
             
             div.innerHTML = `
                 <div class="recipe-search-box">
-                    <input type="text" class="ing-search" placeholder="Filtrer...">
-                    <select class="ing-select"></select>
+                    <input type="text" class="ing-search-input" placeholder="Chercher ingrédient..." autocomplete="off" value="${DICTIONARY[ingId] || ''}">
+                    <div class="ing-dropdown dropdown-list hidden" style="font-size: 0.85rem;"></div>
+                    <input type="hidden" class="ing-id-val" value="${ingId}">
                 </div>
                 <input type="number" class="ing-qty" value="${qty}" step="any" min="0">
                 <button class="qty-btn minus" onclick="this.parentElement.remove()" style="margin:0; width:24px; height:24px;">×</button>
             `;
             container.appendChild(div);
 
-            const searchInput = div.querySelector('.ing-search');
-            searchInput.addEventListener('input', refreshAllSelects);
+            const input = div.querySelector('.ing-search-input');
+            const dropdown = div.querySelector('.ing-dropdown');
+            const hiddenId = div.querySelector('.ing-id-val');
 
-            if (ingId) {
-                const select = div.querySelector('.ing-select');
-                select.innerHTML = `<option value="${ingId}" selected>Chargement...</option>`;
-            }
-            refreshAllSelects();
+            input.addEventListener('click', () => renderIngDropdown(input, dropdown, hiddenId, input.value, targetId));
+            input.addEventListener('input', (e) => renderIngDropdown(input, dropdown, hiddenId, e.target.value, targetId));
+            
+            // Fermeture si on clique ailleurs
+            document.addEventListener('click', (e) => {
+                if (!div.contains(e.target)) dropdown.classList.add('hidden');
+            });
         }
 
         addItemBtn.addEventListener('click', () => {
             addRow();
-            refreshAllSelects();
         });
 
         tableBody.addEventListener('click', (e) => {
@@ -205,7 +214,6 @@
                 delete ITEMS[id];
                 delete DICTIONARY[id];
                 e.target.closest('tr').remove();
-                refreshAllSelects();
             }
         });
 
@@ -234,7 +242,7 @@
                 if (recipeRows.length > 0) {
                     const idRecipe = {};
                     recipeRows.forEach(row => {
-                        const ingId = row.querySelector('.ing-select').value;
+                        const ingId = row.querySelector('.ing-id-val').value;
                         const ingQty = parseFloat(row.querySelector('.ing-qty').value);
                         if (ingId && !isNaN(ingQty)) {
                             idRecipe[ingId] = ingQty;

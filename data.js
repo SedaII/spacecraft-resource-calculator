@@ -64,7 +64,10 @@ const DICTIONARY = {
     62: "Lingot d'alu",
     63: "Lingot d'acier",
     64: "Carbon-a",
-    65: "Silicate"
+    65: "Silicate",
+    66: "Noyau d'elmérium",
+    67: "Lingot de titane",
+    68: "Huile xénique"
 };
 
 // Base de données des objets : Regroupe le type et la recette
@@ -99,8 +102,7 @@ const ITEMS = {
             5: 1,
             6: 1,
             8: 1,
-            9: 6,
-            13: 2
+            9: 6
         }
     },
     5: {
@@ -117,8 +119,8 @@ const ITEMS = {
     6: {
         "id": 6,
         "slug": "microchip",
-        "stackProduced": false,
-        "stackQty": 1,
+        "stackProduced": true,
+        "stackQty": 2,
         "recipe": {
             10: 1
         }
@@ -168,8 +170,8 @@ const ITEMS = {
         "id": 11,
         "slug": "silicone_gel",
         "isPrimitive": true,
-        "stackProduced": false,
-        "stackQty": 1,
+        "stackProduced": true,
+        "stackQty": 20,
         "recipe": {
             3: 1
         }
@@ -179,7 +181,7 @@ const ITEMS = {
         "slug": "electric_wire",
         "isPrimitive": true,
         "stackProduced": true,
-        "stackQty": 5,
+        "stackQty": 4,
         "recipe": {
             2: 1
         }
@@ -210,17 +212,26 @@ const ITEMS = {
         "slug": "concrete",
         "isPrimitive": true,
         "stackProduced": true,
-        "stackQty": 4
+        "stackQty": 5,
+        "recipe": {
+            65: 2
+        }
     },
     16: {
         "id": 16,
         "slug": "photovoltaic_cell",
-        "stackProduced": false,
-        "stackQty": 1
+        "stackProduced": true,
+        "stackQty": 5,
+        "recipe": {
+            10: 1,
+            12: 5,
+            13: 1
+        }
     },
     17: {
         "id": 17,
         "slug": "calcite",
+        "isResource": true,
         "stackProduced": false,
         "stackQty": 1
     },
@@ -228,25 +239,42 @@ const ITEMS = {
         "id": 18,
         "slug": "pump",
         "stackProduced": false,
-        "stackQty": 1
+        "stackQty": 1,
+        "recipe": {
+            5: 1,
+            19: 2,
+            23: 3
+        }
     },
     19: {
         "id": 19,
         "slug": "watertight_pipe",
         "stackProduced": true,
-        "stackQty": 2
+        "stackQty": 2,
+        "recipe": {
+            2: 1
+        }
     },
     20: {
         "id": 20,
         "slug": "confinement_chamber",
         "stackProduced": false,
-        "stackQty": 1
+        "stackQty": 1,
+        "recipe": {
+            7: 4,
+            21: 15
+        }
     },
     21: {
         "id": 21,
         "slug": "monomagnetic_plate",
-        "stackProduced": false,
-        "stackQty": 1
+        "stackProduced": true,
+        "stackQty": 3,
+        "recipe": {
+            1: 1,
+            29: 1,
+            66: 1
+        }
     },
     22: {
         "id": 22,
@@ -263,24 +291,31 @@ const ITEMS = {
     23: {
         "id": 23,
         "slug": "heavy_metal_plate",
-        "stackProduced": false,
-        "stackQty": 1
+        "stackProduced": true,
+        "stackQty": 2,
+        "recipe": {
+            1: 1,
+            67: 1
+        }
     },
     24: {
         "id": 24,
         "slug": "sulfuric_acid",
+        "isResource": true,
         "stackProduced": false,
         "stackQty": 1
     },
     25: {
         "id": 25,
         "slug": "graphite_crystal",
+        "isResource": true,
         "stackProduced": false,
         "stackQty": 1
     },
     26: {
         "id": 26,
         "slug": "vanadium_ingot",
+        "isResource": true,
         "stackProduced": false,
         "stackQty": 1
     },
@@ -288,7 +323,12 @@ const ITEMS = {
         "id": 27,
         "slug": "hydraulic_actuator",
         "stackProduced": false,
-        "stackQty": 1
+        "stackQty": 1,
+        "recipe": {
+            13: 3,
+            19: 5,
+            68: 50
+        }
     },
     28: {
         "id": 28,
@@ -303,8 +343,12 @@ const ITEMS = {
     29: {
         "id": 29,
         "slug": "graphene",
-        "stackProduced": false,
-        "stackQty": 1
+        "isPrimitive": true,
+        "stackProduced": true,
+        "stackQty": 4,
+        "recipe": {
+            25: 1
+        }
     },
     30: {
         "id": 30,
@@ -320,6 +364,7 @@ const ITEMS = {
     31: {
         "id": 31,
         "slug": "quartz",
+        "isResource": true,
         "stackProduced": false,
         "stackQty": 1
     },
@@ -336,12 +381,14 @@ const ITEMS = {
     33: {
         "id": 33,
         "slug": "pyrite",
+        "isResource": true,
         "stackProduced": false,
         "stackQty": 1
     },
     34: {
         "id": 34,
         "slug": "crystal_matrix_c",
+        "isPrimitive": true,
         "stackProduced": false,
         "stackQty": 1,
         "recipe": {
@@ -351,12 +398,14 @@ const ITEMS = {
     35: {
         "id": 35,
         "slug": "azurite_malachite",
+        "isResource": true,
         "stackProduced": false,
         "stackQty": 1
     },
     36: {
         "id": 36,
         "slug": "crystal_matrix_m",
+        "isPrimitive": true,
         "stackProduced": false,
         "stackQty": 1,
         "recipe": {
@@ -366,12 +415,14 @@ const ITEMS = {
     37: {
         "id": 37,
         "slug": "hematite_quartz_ore",
+        "isResource": true,
         "stackProduced": false,
         "stackQty": 1
     },
     38: {
         "id": 38,
         "slug": "crystal_matrix_h",
+        "isPrimitive": true,
         "stackProduced": false,
         "stackQty": 1,
         "recipe": {
@@ -656,8 +707,12 @@ const ITEMS = {
         "id": 63,
         "slug": "steel_ingot",
         "isPrimitive": true,
-        "stackProduced": false,
-        "stackQty": 1
+        "stackProduced": true,
+        "stackQty": 3,
+        "recipe": {
+            1: 4,
+            64: 4
+        }
     },
     64: {
         "id": 64,
@@ -669,6 +724,27 @@ const ITEMS = {
     65: {
         "id": 65,
         "slug": "silicate",
+        "isResource": true,
+        "stackProduced": false,
+        "stackQty": 1
+    },
+    66: {
+        "id": 66,
+        "slug": "elmerium_core",
+        "isResource": true,
+        "stackProduced": false,
+        "stackQty": 1
+    },
+    67: {
+        "id": 67,
+        "slug": "titanium_ingot",
+        "isResource": true,
+        "stackProduced": false,
+        "stackQty": 1
+    },
+    68: {
+        "id": 68,
+        "slug": "xenic_oil",
         "isResource": true,
         "stackProduced": false,
         "stackQty": 1

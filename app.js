@@ -151,10 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const qtyPerCraft = item?.stackQty || 1;
-            const craftsNeeded = multiplier / qtyPerCraft;
+            const craftsNeeded = Math.ceil(multiplier / qtyPerCraft);
+            const producedQty = craftsNeeded * qtyPerCraft;
 
             if (!isRoot) {
-                intermediates[id] = (intermediates[id] || 0) + multiplier;
+                intermediates[id] = (intermediates[id] || 0) + producedQty;
             }
 
             const recipe = item?.recipe;
@@ -210,11 +211,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 for (const id of sortedIntermediates) {
+                    const item = ITEMS[id];
                     const qty = intermediates[id];
+                    // Arrondir au multiple du lot si l'item est produit en stack
+                    const roundedQty = (item?.stackProduced && item?.stackQty > 1)
+                        ? Math.ceil(qty / item.stackQty) * item.stackQty
+                        : Math.ceil(qty);
+
                     componentTotals.innerHTML += `
                         <div class="row">
-                            <span>${ITEMS[id]?.isPrimitive ? '📦 ' : '⚙️ '}${DICTIONARY[id] || id}</span>
-                            <span><strong>${qty}</strong></span>
+                            <span>${item?.isPrimitive ? '📦 ' : '⚙️ '}${DICTIONARY[id] || id}</span>
+                            <span><strong>${roundedQty}</strong></span>
                         </div>`;
                 }
             }
@@ -223,10 +230,16 @@ document.addEventListener('DOMContentLoaded', () => {
             resultArea.classList.remove('hidden');
             resourceTotals.innerHTML = '';
             for (const [id, qty] of Object.entries(baseResources)) {
+                const item = ITEMS[id];
+                // Même logique pour les ressources (ex: lingots d'acier produits par 3)
+                const roundedQty = (item?.stackProduced && item?.stackQty > 1)
+                    ? Math.ceil(qty / item.stackQty) * item.stackQty
+                    : Math.ceil(qty);
+
                 resourceTotals.innerHTML += `
                     <div class="row">
                         <span>${DICTIONARY[id] || id}</span>
-                        <span><strong>${Math.ceil(qty)}</strong></span>
+                        <span><strong>${roundedQty}</strong></span>
                     </div>`;
             }
         } else {
