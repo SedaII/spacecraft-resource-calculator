@@ -7,14 +7,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainMinus = document.getElementById('mainMinus');
     const mainPlus = document.getElementById('mainPlus');
     const queueList = document.getElementById('queueList');
+    const clearStockBtn = document.getElementById('clearStockBtn');
     const resourceTotals = document.getElementById('resourceTotals');
+    const stockTotals = document.getElementById('stockTotals');
     const componentTotals = document.getElementById('componentTotals');
+    const stockArea = document.getElementById('stockArea');
     const componentsArea = document.getElementById('componentsArea');
     const resultArea = document.getElementById('resultArea');
 
+    const STORAGE_KEY = 'spacecraft_calculator_state';
+
     let buildQueue = {}; // Format: { id: quantity }
-    let currentMainQty = 1;
+    let initialStock = {}; // Format: { id: quantity }
+    let currentMainQty = 0; // Initialisé à 0 par défaut
     let highlightedIndex = -1;
+
+    // Initialisation de l'input de quantité principal
+    mainQtyDisplay.disabled = true;
+    mainMinus.disabled = true;
+    mainPlus.disabled = true;
 
     // Gestion des sections pliantes
     document.querySelectorAll('.collapsible').forEach(header => {
@@ -22,6 +33,24 @@ document.addEventListener('DOMContentLoaded', () => {
             header.parentElement.classList.toggle('collapsed');
         });
     });
+
+    function saveData() {
+        const data = { buildQueue, initialStock };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                buildQueue = data.buildQueue || {};
+                initialStock = data.initialStock || {};
+            } catch (e) {
+                console.error("Erreur de chargement du stockage local", e);
+            }
+        }
+    }
 
     function getMultiplier(e) {
         if (e.ctrlKey || e.metaKey) return 100;
@@ -31,6 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateQueue(id, amount) {
         buildQueue[id] = (buildQueue[id] || 0) + amount;
         if (buildQueue[id] <= 0) delete buildQueue[id];
+        render();
+    }
+
+    function updateStock(id, amount) {
+        initialStock[id] = Math.max(0, (initialStock[id] || 0) + amount);
+        if (initialStock[id] === 0) delete initialStock[id];
         render();
     }
 
@@ -82,17 +117,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncSelection = () => {
         const id = getSelectedId();
         if (!id) {
-            mainQtyDisplay.style.opacity = "0.5";
+            mainQtyDisplay.value = 0;
+            mainQtyDisplay.disabled = true;
+            mainMinus.disabled = true;
+            mainPlus.disabled = true;
+            addBtn.disabled = true;
             currentMainQty = 0;
-            mainQtyDisplay.innerHTML = `<strong>0</strong>`;
             return;
         }
-        mainQtyDisplay.style.opacity = "1";
+        mainQtyDisplay.disabled = false;
+        mainMinus.disabled = false;
+        mainPlus.disabled = false;
+        addBtn.disabled = false;
         currentMainQty = ITEMS[id]?.stackQty || 1;
-        mainQtyDisplay.innerHTML = `<strong>${currentMainQty}</strong>`;
+        mainQtyDisplay.value = currentMainQty;
     };
 
-    function initSelect() {
+    function initSelect() { // Cette fonction est appelée une fois au démarrage
         // Ouvrir au clic
         itemSearch.addEventListener('click', () => {
             renderDropdown(itemSearch.value);
@@ -140,37 +181,63 @@ document.addEventListener('DOMContentLoaded', () => {
     // Calcul récursif pour remonter aux ressources de base
     function calculateTotals() {
         const baseResources = {};
-        const intermediates = {};
+        const remainingIntermediates = {}; // Format: { id: { total: 0, requiredBy: { parentId: qty } } }
+        const allIntermediates = new Set();
+        const virtualStock = { ...initialStock };
 
-        function resolve(id, multiplier, isRoot = false) {
+        function resolve(id, multiplier, isRoot = false, parentId = null) {
             const item = ITEMS[id];
+            if (!item) return;
 
-            if (item?.isResource) {
+            if (item.isResource) {
                 baseResources[id] = (baseResources[id] || 0) + multiplier;
                 return;
             }
 
-            const qtyPerCraft = item?.stackQty || 1;
-            const craftsNeeded = Math.ceil(multiplier / qtyPerCraft);
+            if (!isRoot) {
+                allIntermediates.add(id);
+            }
+
+            // Suivi des dépendances pour l'affichage
+            if (!isRoot && !remainingIntermediates[id]) {
+                remainingIntermediates[id] = { total: 0, requiredBy: {} };
+            }
+            
+            if (parentId && remainingIntermediates[id]) {
+                remainingIntermediates[id].requiredBy[parentId] = (remainingIntermediates[id].requiredBy[parentId] || 0) + multiplier;
+            }
+
+            let needed = multiplier;
+            if (!isRoot) {
+                const fromStock = Math.min(needed, virtualStock[id] || 0);
+                needed -= fromStock;
+                virtualStock[id] = (virtualStock[id] || 0) - fromStock;
+            }
+
+            if (needed <= 0) return;
+
+            const qtyPerCraft = item.stackQty || 1;
+            const craftsNeeded = Math.ceil(needed / qtyPerCraft);
             const producedQty = craftsNeeded * qtyPerCraft;
 
             if (!isRoot) {
-                intermediates[id] = (intermediates[id] || 0) + producedQty;
+                remainingIntermediates[id].total += producedQty;
             }
 
-            const recipe = item?.recipe;
-            if (recipe) {
-                for (const [ingredientId, amount] of Object.entries(recipe)) {
-                    resolve(ingredientId, amount * craftsNeeded);
+            if (item.recipe) {
+                for (const [ingredientId, amount] of Object.entries(item.recipe)) {
+                    resolve(ingredientId, amount * craftsNeeded, false, id);
                 }
             }
         }
 
-        Object.entries(buildQueue).forEach(([id, qty]) => resolve(id, qty, true));
-        return { baseResources, intermediates };
+        Object.entries(buildQueue).forEach(([id, qty]) => resolve(id, qty, true, null));
+        return { baseResources, remainingIntermediates, allIntermediates: Array.from(allIntermediates) };
     }
 
     function render() {
+        saveData();
+
         // Vider la liste actuelle
         queueList.innerHTML = '';
         
@@ -184,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>${DICTIONARY[id] || id}</span>
                 <div class="item-controls">
                     <button class="qty-btn minus" data-id="${id}">-</button>
-                    <span class="qty-value"><strong>${qty}</strong></span>
+                    <input type="number" class="qty-input" data-id="${id}" value="${qty}" min="0">
                     <button class="qty-btn plus" data-id="${id}">+</button>
                     <button class="qty-btn delete-btn" data-id="${id}" title="Supprimer la ligne">×</button>
                 </div>
@@ -194,33 +261,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Calculer et afficher les résultats
         if (entries.length > 0) {
-            const { baseResources, intermediates } = calculateTotals();
+            const { baseResources, remainingIntermediates, allIntermediates } = calculateTotals();
             
-            // Affichage Composants Intermédiaires
-            const hasIntermediates = Object.keys(intermediates).length > 0;
-            componentsArea.classList.toggle('hidden', !hasIntermediates);
+            // Affichage Stock de départ
+            const hasAllIntermediates = allIntermediates.length > 0;
+            stockArea.classList.toggle('hidden', !hasAllIntermediates);
             
-            if (hasIntermediates) {
-                componentTotals.innerHTML = '';
-                
-                // Tri : composants primitifs en premier
-                const sortedIntermediates = Object.keys(intermediates).sort((a, b) => {
+            // Afficher le bouton reset seulement s'il y a quelque chose en stock
+            const hasInitialStock = Object.keys(initialStock).length > 0;
+            clearStockBtn.classList.toggle('hidden', !hasInitialStock);
+            
+            if (hasAllIntermediates) {
+                stockTotals.innerHTML = '';
+                const sortedForStock = allIntermediates.sort((a, b) => {
                     const aPrim = ITEMS[a]?.isPrimitive ? 1 : 0;
                     const bPrim = ITEMS[b]?.isPrimitive ? 1 : 0;
                     return bPrim - aPrim;
                 });
 
+                for (const id of sortedForStock) {
+                    const qty = initialStock[id] || 0;
+                    stockTotals.innerHTML += `
+                        <div class="row">
+                            <span>${DICTIONARY[id] || id}</span>
+                            <div class="item-controls">
+                                <button class="qty-btn minus" data-id="${id}">-</button>
+                                <input type="number" class="qty-input" data-id="${id}" value="${qty}" min="0">
+                                <button class="qty-btn plus" data-id="${id}">+</button>
+                            </div>
+                        </div>`;
+                }
+            }
+            
+            // Affichage Composants Intermédiaires
+            const hasIntermediates = Object.keys(remainingIntermediates).length > 0;
+            componentsArea.classList.toggle('hidden', !hasIntermediates);
+            
+            if (hasIntermediates) {
+                componentTotals.innerHTML = '';
+                const buildQueueIds = Object.keys(buildQueue);
+
+                const sortedIntermediates = Object.keys(remainingIntermediates).sort((a, b) => {
+                    const isDirectA = Object.keys(remainingIntermediates[a].requiredBy).every(id => buildQueueIds.includes(id));
+                    const isDirectB = Object.keys(remainingIntermediates[b].requiredBy).every(id => buildQueueIds.includes(id));
+
+                    // Les composants finaux (directement pour la buildQueue) vont en bas (return 1)
+                    if (isDirectA !== isDirectB) return isDirectA ? 1 : -1;
+
+                    const aPrim = ITEMS[a]?.isPrimitive ? 1 : 0;
+                    const bPrim = ITEMS[b]?.isPrimitive ? 1 : 0;
+                    if (aPrim !== bPrim) return bPrim - aPrim; // Primitifs en premier au sein de chaque catégorie
+                    return (DICTIONARY[a] || '').localeCompare(DICTIONARY[b] || '');
+                });
+
                 for (const id of sortedIntermediates) {
                     const item = ITEMS[id];
-                    const qty = intermediates[id];
-                    // Arrondir au multiple du lot si l'item est produit en stack
+                    const data = remainingIntermediates[id];
+                    const qty = data.total;
+                    
                     const roundedQty = (item?.stackProduced && item?.stackQty > 1)
                         ? Math.ceil(qty / item.stackQty) * item.stackQty
                         : Math.ceil(qty);
 
+                    // Filtrer : On ne garde que les parents qui ne sont PAS dans la buildQueue
+                    const intermediateParents = Object.entries(data.requiredBy)
+                        .filter(([pId]) => !buildQueueIds.includes(pId));
+
+                    const parentTags = intermediateParents
+                        .map(([pId, pQty]) => `<span class="parent-tag">${DICTIONARY[pId] || pId} (x${pQty})</span>`)
+                        .join('');
+
                     componentTotals.innerHTML += `
                         <div class="row">
-                            <span>${item?.isPrimitive ? '📦 ' : '⚙️ '}${DICTIONARY[id] || id}</span>
+                            <div class="item-column">
+                                <span class="item-name">${intermediateParents.length > 0 ? '🔧 ' : ''}${item?.isPrimitive ? '📦 ' : '⚙️ '}${DICTIONARY[id] || id}</span>
+                                <div class="parent-info">${parentTags}</div>
+                            </div>
                             <span><strong>${roundedQty}</strong></span>
                         </div>`;
                 }
@@ -245,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             resultArea.classList.add('hidden');
             componentsArea.classList.add('hidden');
+            stockArea.classList.add('hidden');
         }
     }
 
@@ -263,10 +380,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!id) return;
         
         const stackQty = ITEMS[id]?.stackQty || 1;
-        currentMainQty = Math.max(stackQty, currentMainQty + (multiplier * stackQty));
-        mainQtyDisplay.innerHTML = `<strong>${currentMainQty}</strong>`;
+        let newQty = currentMainQty + (multiplier * stackQty);
+        currentMainQty = Math.max(stackQty, newQty); // Ne pas descendre en dessous de la quantité de stack
+        mainQtyDisplay.value = currentMainQty;
     };
 
+    // Écouteur pour la saisie manuelle dans l'input de quantité principal
+    mainQtyDisplay.addEventListener('change', (e) => {
+        const id = getSelectedId();
+        if (!id) return;
+        let val = parseInt(e.target.value, 10) || ITEMS[id]?.stackQty || 1;
+        currentMainQty = Math.max(ITEMS[id]?.stackQty || 1, val);
+        mainQtyDisplay.value = currentMainQty;
+    });
     mainPlus.addEventListener('click', (e) => updateMainQty(getMultiplier(e)));
     mainMinus.addEventListener('click', (e) => updateMainQty(-1 * getMultiplier(e)));
 
@@ -282,6 +408,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     clearBtn.addEventListener('click', () => {
         buildQueue = {};
+        render();
+    });
+
+    clearStockBtn.addEventListener('click', () => {
+        initialStock = {};
         render();
     });
 
@@ -302,6 +433,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    queueList.addEventListener('change', (e) => {
+        if (e.target.classList.contains('qty-input')) {
+            const id = e.target.dataset.id;
+            const val = parseInt(e.target.value, 10) || 0;
+            if (val <= 0) delete buildQueue[id];
+            else buildQueue[id] = val;
+            render();
+        }
+    });
+
+    stockTotals.addEventListener('click', (e) => {
+        const button = e.target.closest('button');
+        if (!button) return;
+
+        const id = button.dataset.id;
+        const multiplier = getMultiplier(e);
+        const delta = (button.classList.contains('plus') ? multiplier : -multiplier);
+        updateStock(id, delta);
+    });
+
+    stockTotals.addEventListener('change', (e) => {
+        if (e.target.classList.contains('qty-input')) {
+            const id = e.target.dataset.id;
+            const val = parseInt(e.target.value, 10) || 0;
+            if (val <= 0) delete initialStock[id];
+            else initialStock[id] = val;
+            render();
+        }
+    });
+
     // Clic droit pour +/- 10
     queueList.addEventListener('contextmenu', (e) => {
         const btn = e.target.closest('.qty-btn:not(.delete-btn)');
@@ -313,5 +474,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    stockTotals.addEventListener('contextmenu', (e) => {
+        const btn = e.target.closest('.qty-btn');
+        if (btn) {
+            e.preventDefault();
+            const id = btn.dataset.id;
+            updateStock(id, (btn.classList.contains('plus') ? 10 : -10));
+        }
+    });
+
+    // Appeler initSelect une fois que tous les écouteurs sont configurés
     initSelect();
+    loadData();
+    render();
 });

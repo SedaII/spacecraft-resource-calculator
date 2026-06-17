@@ -10,6 +10,11 @@
     <div class="container">
         <h1>Calculateur de composants et ressources</h1>
 
+        <div class="help-box">
+            <strong>Astuce bouton quantité :</strong> Clic droit (x10), Ctrl + Clic (x100).
+            <br><small>Les quantités s'adaptent automatiquement aux lots de fabrication (sauf pour le stock).</small>
+        </div>
+
         <div class="controls">
             <div class="field">
                 <label for="itemSearch">Objet à crafter</label>
@@ -22,7 +27,7 @@
                 <label>Quantité</label>
                 <div class="item-controls">
                     <button type="button" class="qty-btn" id="mainMinus">-</button>
-                    <span id="mainQty" class="qty-value"><strong>0</strong></span>
+                    <input type="number" id="mainQty" class="qty-input" value="1" min="1">
                     <button type="button" class="qty-btn" id="mainPlus">+</button>
                 </div>
             </div>
@@ -35,8 +40,15 @@
             <button id="clearBtn" class="remove-btn hidden">Tout supprimer</button>
         </div>
 
+        <div id="stockArea" class="section stock-section hidden">
+            <h3 class="collapsible">Stock de départ</h3>
+            <div id="stockTotals"></div>
+            <button id="clearStockBtn" class="remove-btn hidden">Réinitialiser le stock</button>
+        </div>
+
         <div id="componentsArea" class="section components-section hidden">
             <h3 class="collapsible">Composants intermédiaires</h3>
+            <p class="section-explanation"><small>L'icône 🔧 indique que ce composant est nécessaire à la fabrication d'un autre composant intermédiaire.</small></p>
             <div id="componentTotals"></div>
         </div>
 
