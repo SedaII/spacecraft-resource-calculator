@@ -228,3 +228,26 @@ button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
+
+.item-column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.parent-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.parent-tag {
+    font-size: 0.7rem;
+    background: var(--bg-alt);
+    color: var(--primary);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    opacity: 0.8;
+    font-weight: 500;
+}
