@@ -113,9 +113,11 @@ button:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0.5rem 0; /* Agrandit la zone de clic verticale */
+    margin: -0.5rem 0; /* Compense le padding pour ne pas décaler le reste */
 }
 
-.collapsible::after { content: '▼'; font-size: 0.8rem; opacity: 0.5; }
+.collapsible::after { content: '▼'; font-size: 1.2rem; opacity: 0.7; }
 .collapsed .collapsible::after { content: '▶'; }
 .collapsed > *:not(.collapsible) { display: none !important; }
 

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Spacecraft</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .container { max-width: 1200px; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .admin-table th, .admin-table td { padding: 10px; border: 1px solid var(--border); text-align: left; }
+        .admin-table input, .admin-table select { width: 100%; height: 32px; border: 1px solid #ccc; padding: 2px 5px; box-sizing: border-box; }
+        .recipe-container { display: flex; flex-direction: column; gap: 5px; }
+        .ingredient-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 5px; align-items: center; background: #f8fafc; padding: 5px; border-radius: 4px; border: 1px solid var(--border); }
+        .ingredient-row select, .ingredient-row input { height: 28px !important; font-size: 0.85rem; }
+        .add-ing-btn { background: #64748b; font-size: 0.75rem; padding: 4px 8px; margin-top: 5px; width: 100%; }
+        .add-ing-btn:hover { background: #475569; }
+        .export-area { width: 100%; height: 300px; font-family: monospace; margin-top: 1rem; padding: 1rem; background: #1e293b; color: #f8fafc; border-radius: 8px; }
+        .btn-group { display: flex; gap: 5px; }
+        .tag { font-size: 0.7rem; padding: 2px 5px; border-radius: 4px; background: #e2e8f0; font-weight: bold; }
+        .nav { margin-bottom: 2rem; }
+        .nav a { color: var(--primary); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav"><a href="index.html">← Retour au calculateur</a></div>
+        <h1>Gestion des données (Items & Recettes)</h1>
+
+        <div class="section">
+            <h3 class="collapsible">Ajouter / Modifier les items</h3>
+            <div class="content">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom (Label)</th>
+                            <th>Slug</th>
+                            <th>Type</th>
+                            <th>Recette (Ingrédients)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+                <button id="addItemBtn" style="margin-top: 1rem;">+ Ajouter un item</button>
+            </div>
+        </div>
+
+        <div class="section result-section">
+            <h3>Export des données</h3>
+            <p>Une fois vos modifications terminées, copiez le code ci-dessous et remplacez le contenu de votre fichier <strong>data.js</strong>.</p>
+            <button id="generateBtn">Générer le code data.js</button>
+            <textarea id="exportTextarea" class="export-area" readonly></textarea>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        const tableBody = document.getElementById('adminTableBody');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const exportArea = document.getElementById('exportTextarea');
+
+        // Met à jour tous les selects d'ingrédients existants dans la table
+        function refreshAllSelects() {
+            document.querySelectorAll('.ing-select').forEach(select => {
+                const currentValue = select.value;
+                const container = select.closest('.recipe-container');
+                const targetId = container.id.split('-')[1];
+
+                let options = '<option value="">-- Choisir --</option>';
+                Object.values(ITEMS).forEach(it => {
+                    if (it.id == targetId) return; // Empêcher l'auto-référence
+                    const name = DICTIONARY[it.id] || it.slug || `Item ${it.id}`;
+                    options += `<option value="${it.id}" ${it.id == currentValue ? 'selected' : ''}>${name}</option>`;
+                });
+                select.innerHTML = options;
+            });
+        }
+
+        // Initialisation de la table
+        function renderAdminTable() {
+            tableBody.innerHTML = '';
+            Object.values(ITEMS).forEach(item => {
+                addRow(item);
+            });
+        }
+
+        function addRow(item = null) {
+            const id = item ? item.id : (Math.max(0, ...Object.keys(ITEMS).map(Number)) + 1);
+            const label = DICTIONARY[id] || "";
+            const slug = item ? item.slug : "";
+            
+            let type = "component";
+            if (item?.isResource) type = "resource";
+            else if (item?.isPrimitive) type = "primitive";
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${id}</strong></td>
+                <td><input type="text" class="input-label" value="${label}" data-id="${id}"></td>
+                <td><input type="text" class="input-slug" value="${slug}" data-id="${id}"></td>
+                <td>
+                    <select class="input-type" data-id="${id}">
+                        <option value="resource" ${type === 'resource' ? 'selected' : ''}>Ressource (Lingot)</option>
+                        <option value="primitive" ${type === 'primitive' ? 'selected' : ''}>Composant Primitif</option>
+                        <option value="component" ${type === 'component' ? 'selected' : ''}>Composant Complexe</option>
+                    </select>
+                </td>
+                <td>
+                    <div class="recipe-container" id="recipe-${id}"></div>
+                    <button class="add-ing-btn" onclick="addIngredientRow(${id})">+ Ajouter ingrédient</button>
+                </td>
+                <td>
+                    <button class="remove-btn delete-row-btn" data-id="${id}">×</button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+
+            // Synchronisation dynamique des données lors de la saisie
+            tr.querySelector('.input-label').addEventListener('input', (e) => {
+                DICTIONARY[id] = e.target.value;
+                refreshAllSelects();
+            });
+            tr.querySelector('.input-slug').addEventListener('input', (e) => {
+                if (ITEMS[id]) ITEMS[id].slug = e.target.value;
+                refreshAllSelects();
+            });
+
+            // Remplissage initial de la recette
+            if (item && item.recipe) {
+                for (const [ingId, qty] of Object.entries(item.recipe)) {
+                    addIngredientRow(id, ingId, qty);
+                }
+            }
+
+            if (!item) {
+                // Si c'est un nouvel item, on l'ajoute temporairement à l'objet local
+                ITEMS[id] = { id, slug: "" };
+                DICTIONARY[id] = "";
+            }
+        }
+
+        function addIngredientRow(targetId, ingId = "", qty = 1) {
+            const container = document.getElementById(`recipe-${targetId}`);
+            const div = document.createElement('div');
+            div.className = 'ingredient-row';
+            
+            // Création du select avec tous les items dispo
+            let options = '<option value="">-- Choisir --</option>';
+            Object.values(ITEMS).forEach(it => {
+                if (it.id == targetId) return; // Empêcher l'auto-référence
+                const name = DICTIONARY[it.id] || it.slug || `Item ${it.id}`;
+                options += `<option value="${it.id}" ${it.id == ingId ? 'selected' : ''}>${name}</option>`;
+            });
+
+            div.innerHTML = `
+                <select class="ing-select">${options}</select>
+                <input type="number" class="ing-qty" value="${qty}" step="any" min="0">
+                <button class="qty-btn minus" onclick="this.parentElement.remove()" style="margin:0; width:24px; height:24px;">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        addItemBtn.addEventListener('click', () => {
+            addRow();
+            refreshAllSelects();
+        });
+
+        tableBody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-row-btn')) {
+                if (!confirm("Supprimer cet item ?")) return;
+                const id = e.target.dataset.id;
+                delete ITEMS[id];
+                delete DICTIONARY[id];
+                e.target.closest('tr').remove();
+                refreshAllSelects();
+            }
+        });
+
+        generateBtn.addEventListener('click', () => {
+            const newDictionary = {};
+            const newItems = {};
+
+            document.querySelectorAll('#adminTableBody tr').forEach(tr => {
+                const id = tr.querySelector('.input-label').dataset.id;
+                const label = tr.querySelector('.input-label').value;
+                const slug = tr.querySelector('.input-slug').value;
+                const type = tr.querySelector('.input-type').value;
+                const recipeRows = tr.querySelectorAll('.ingredient-row');
+
+                newDictionary[id] = label;
+                
+                const itemObj = { id: parseInt(id), slug: slug };
+                if (type === "resource") itemObj.isResource = true;
+                if (type === "primitive") itemObj.isPrimitive = true;
+                
+                if (recipeRows.length > 0) {
+                    const idRecipe = {};
+                    recipeRows.forEach(row => {
+                        const ingId = row.querySelector('.ing-select').value;
+                        const ingQty = parseFloat(row.querySelector('.ing-qty').value);
+                        if (ingId && !isNaN(ingQty)) {
+                            idRecipe[ingId] = ingQty;
+                        }
+                    });
+                    if (Object.keys(idRecipe).length > 0) itemObj.recipe = idRecipe;
+                }
+                newItems[id] = itemObj;
+            });
+
+            const code = `// Dictionnaire : ID Anglais -> Label Français
+const DICTIONARY = ${JSON.stringify(newDictionary, null, 4).replace(/"(\d+)":/g, '$1:')};
+
+// Base de données des objets : Regroupe le type et la recette
+const ITEMS = ${JSON.stringify(newItems, null, 4).replace(/"(\d+)":/g, '$1:')};`;
+
+            exportArea.value = code;
+        });
+
+        // Gestion simple du pliage (reprise de app.js)
+        document.querySelectorAll('.collapsible').forEach(header => {
+            header.addEventListener('click', () => {
+                header.parentElement.classList.toggle('collapsed');
+            });
+        });
+
+        renderAdminTable();
+    </script>
+</body>
+</html>
