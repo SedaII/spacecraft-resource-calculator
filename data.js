@@ -126,8 +126,8 @@ const ITEMS = {
     7: {
         "id": 7,
         "slug": "magnetic_coil",
-        "stackProduced": false,
-        "stackQty": 1,
+        "stackProduced": true,
+        "stackQty": 2,
         "recipe": {
             1: 1,
             9: 1,
@@ -179,7 +179,7 @@ const ITEMS = {
         "slug": "electric_wire",
         "isPrimitive": true,
         "stackProduced": true,
-        "stackQty": 4,
+        "stackQty": 5,
         "recipe": {
             2: 1
         }
@@ -199,6 +199,8 @@ const ITEMS = {
         "id": 14,
         "slug": "structural_beam",
         "isPrimitive": true,
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             63: 2
         }
@@ -206,35 +208,51 @@ const ITEMS = {
     15: {
         "id": 15,
         "slug": "concrete",
-        "isPrimitive": true
+        "isPrimitive": true,
+        "stackProduced": true,
+        "stackQty": 4
     },
     16: {
         "id": 16,
-        "slug": "photovoltaic_cell"
+        "slug": "photovoltaic_cell",
+        "stackProduced": false,
+        "stackQty": 1
     },
     17: {
         "id": 17,
-        "slug": "calcite"
+        "slug": "calcite",
+        "stackProduced": false,
+        "stackQty": 1
     },
     18: {
         "id": 18,
-        "slug": "pump"
+        "slug": "pump",
+        "stackProduced": false,
+        "stackQty": 1
     },
     19: {
         "id": 19,
-        "slug": "watertight_pipe"
+        "slug": "watertight_pipe",
+        "stackProduced": true,
+        "stackQty": 2
     },
     20: {
         "id": 20,
-        "slug": "confinement_chamber"
+        "slug": "confinement_chamber",
+        "stackProduced": false,
+        "stackQty": 1
     },
     21: {
         "id": 21,
-        "slug": "monomagnetic_plate"
+        "slug": "monomagnetic_plate",
+        "stackProduced": false,
+        "stackQty": 1
     },
     22: {
         "id": 22,
         "slug": "chemical_battery",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 1,
             24: 20,
@@ -244,27 +262,39 @@ const ITEMS = {
     },
     23: {
         "id": 23,
-        "slug": "heavy_metal_plate"
+        "slug": "heavy_metal_plate",
+        "stackProduced": false,
+        "stackQty": 1
     },
     24: {
         "id": 24,
-        "slug": "sulfuric_acid"
+        "slug": "sulfuric_acid",
+        "stackProduced": false,
+        "stackQty": 1
     },
     25: {
         "id": 25,
-        "slug": "graphite_crystal"
+        "slug": "graphite_crystal",
+        "stackProduced": false,
+        "stackQty": 1
     },
     26: {
         "id": 26,
-        "slug": "vanadium_ingot"
+        "slug": "vanadium_ingot",
+        "stackProduced": false,
+        "stackQty": 1
     },
     27: {
         "id": 27,
-        "slug": "hydraulic_actuator"
+        "slug": "hydraulic_actuator",
+        "stackProduced": false,
+        "stackQty": 1
     },
     28: {
         "id": 28,
         "slug": "small_modular_kit",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             9: 20,
             12: 10
@@ -272,11 +302,15 @@ const ITEMS = {
     },
     29: {
         "id": 29,
-        "slug": "graphene"
+        "slug": "graphene",
+        "stackProduced": false,
+        "stackQty": 1
     },
     30: {
         "id": 30,
         "slug": "modular_kit",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             23: 20,
             28: 4,
@@ -285,11 +319,15 @@ const ITEMS = {
     },
     31: {
         "id": 31,
-        "slug": "quartz"
+        "slug": "quartz",
+        "stackProduced": false,
+        "stackQty": 1
     },
     32: {
         "id": 32,
         "slug": "crystal_focuser",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             12: 5,
             31: 1
@@ -297,33 +335,45 @@ const ITEMS = {
     },
     33: {
         "id": 33,
-        "slug": "pyrite"
+        "slug": "pyrite",
+        "stackProduced": false,
+        "stackQty": 1
     },
     34: {
         "id": 34,
         "slug": "crystal_matrix_c",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             33: 1
         }
     },
     35: {
         "id": 35,
-        "slug": "azurite_malachite"
+        "slug": "azurite_malachite",
+        "stackProduced": false,
+        "stackQty": 1
     },
     36: {
         "id": 36,
         "slug": "crystal_matrix_m",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             35: 1
         }
     },
     37: {
         "id": 37,
-        "slug": "hematite_quartz_ore"
+        "slug": "hematite_quartz_ore",
+        "stackProduced": false,
+        "stackQty": 1
     },
     38: {
         "id": 38,
         "slug": "crystal_matrix_h",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             37: 1
         }
@@ -331,6 +381,8 @@ const ITEMS = {
     39: {
         "id": 39,
         "slug": "command_tower",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             7: 80,
             13: 50,
@@ -341,6 +393,8 @@ const ITEMS = {
     40: {
         "id": 40,
         "slug": "extractor",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             5: 1,
             15: 4
@@ -349,6 +403,8 @@ const ITEMS = {
     41: {
         "id": 41,
         "slug": "solar_plant",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 9,
             14: 1,
@@ -358,6 +414,8 @@ const ITEMS = {
     42: {
         "id": 42,
         "slug": "pylon",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             7: 1
         }
@@ -365,6 +423,8 @@ const ITEMS = {
     43: {
         "id": 43,
         "slug": "foundry",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 1,
             15: 10
@@ -373,6 +433,8 @@ const ITEMS = {
     44: {
         "id": 44,
         "slug": "micro_furnace",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 2,
             15: 5,
@@ -382,6 +444,8 @@ const ITEMS = {
     45: {
         "id": 45,
         "slug": "assembler",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             5: 3,
             13: 8,
@@ -392,6 +456,8 @@ const ITEMS = {
     46: {
         "id": 46,
         "slug": "chemical_plant",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 80,
             14: 8,
@@ -403,6 +469,8 @@ const ITEMS = {
     47: {
         "id": 47,
         "slug": "crystallizer",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 10,
             14: 2,
@@ -413,6 +481,8 @@ const ITEMS = {
     48: {
         "id": 48,
         "slug": "warehouse",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             8: 50,
             13: 4,
@@ -423,6 +493,8 @@ const ITEMS = {
     49: {
         "id": 49,
         "slug": "exchange_box",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             8: 10
         }
@@ -430,6 +502,8 @@ const ITEMS = {
     50: {
         "id": 50,
         "slug": "drone_hub",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             8: 1,
             13: 1
@@ -438,6 +512,8 @@ const ITEMS = {
     51: {
         "id": 51,
         "slug": "tank",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             11: 100,
             13: 80,
@@ -449,6 +525,8 @@ const ITEMS = {
     52: {
         "id": 52,
         "slug": "mag_plasma_tank",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 4,
             15: 20,
@@ -459,6 +537,8 @@ const ITEMS = {
     53: {
         "id": 53,
         "slug": "landing_pad",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 8,
             15: 40
@@ -467,6 +547,8 @@ const ITEMS = {
     54: {
         "id": 54,
         "slug": "space_shipyard",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 30,
             14: 12,
@@ -476,6 +558,8 @@ const ITEMS = {
     55: {
         "id": 55,
         "slug": "xenic_farm",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 10,
             14: 10,
@@ -487,6 +571,8 @@ const ITEMS = {
     56: {
         "id": 56,
         "slug": "fuel_plant",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             5: 10,
             13: 1,
@@ -497,6 +583,8 @@ const ITEMS = {
     57: {
         "id": 57,
         "slug": "battery_cluster",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             7: 4,
             13: 4,
@@ -507,6 +595,8 @@ const ITEMS = {
     58: {
         "id": 58,
         "slug": "liquid_extractor",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 40,
             14: 4,
@@ -518,6 +608,8 @@ const ITEMS = {
     59: {
         "id": 59,
         "slug": "packaging_plant",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             13: 10,
             15: 5,
@@ -529,6 +621,8 @@ const ITEMS = {
     60: {
         "id": 60,
         "slug": "factory",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             5: 10,
             6: 10,
@@ -541,6 +635,8 @@ const ITEMS = {
     61: {
         "id": 61,
         "slug": "hyperlens",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             3: 6,
             32: 3,
@@ -552,21 +648,29 @@ const ITEMS = {
     62: {
         "id": 62,
         "slug": "alu_ingot",
-        "isResource": true
+        "isResource": true,
+        "stackProduced": false,
+        "stackQty": 1
     },
     63: {
         "id": 63,
         "slug": "steel_ingot",
-        "isPrimitive": true
+        "isPrimitive": true,
+        "stackProduced": false,
+        "stackQty": 1
     },
     64: {
         "id": 64,
         "slug": "carbon",
-        "isResource": true
+        "isResource": true,
+        "stackProduced": false,
+        "stackQty": 1
     },
     65: {
         "id": 65,
         "slug": "silicate",
-        "isResource": true
+        "isResource": true,
+        "stackProduced": false,
+        "stackQty": 1
     }
 };
