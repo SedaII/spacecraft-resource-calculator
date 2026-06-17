@@ -11,7 +11,7 @@
         .admin-table th, .admin-table td { padding: 10px; border: 1px solid var(--border); text-align: left; }
         .admin-table input, .admin-table select { width: 100%; height: 32px; border: 1px solid #ccc; padding: 2px 5px; box-sizing: border-box; }
         .recipe-container { display: flex; flex-direction: column; gap: 5px; }
-        .ingredient-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 5px; align-items: center; background: #f8fafc; padding: 5px; border-radius: 4px; border: 1px solid var(--border); }
+        .ingredient-row { display: grid; grid-template-columns: 2.5fr 0.8fr auto; gap: 5px; align-items: flex-start; background: #f8fafc; padding: 5px; border-radius: 4px; border: 1px solid var(--border); }
         .ingredient-row select, .ingredient-row input { height: 28px !important; font-size: 0.85rem; }
         .add-ing-btn { background: #64748b; font-size: 0.75rem; padding: 4px 8px; margin-top: 5px; width: 100%; }
         .add-ing-btn:hover { background: #475569; }
@@ -64,18 +64,25 @@
 
         // Met à jour tous les selects d'ingrédients existants dans la table
         function refreshAllSelects() {
-            document.querySelectorAll('.ing-select').forEach(select => {
+            document.querySelectorAll('.ingredient-row').forEach(row => {
+                const select = row.querySelector('.ing-select');
+                const searchInput = row.querySelector('.ing-search');
+                const filter = searchInput ? searchInput.value.toLowerCase() : "";
+                
                 const currentValue = select.value;
                 const container = select.closest('.recipe-container');
                 const targetId = container.id.split('-')[1];
 
                 let options = '<option value="">-- Choisir --</option>';
                 Object.values(ITEMS).forEach(it => {
-                    if (it.id == targetId) return; // Empêcher l'auto-référence
+                    if (it.id == targetId) return; 
                     const name = DICTIONARY[it.id] || it.slug || `Item ${it.id}`;
-                    options += `<option value="${it.id}" ${it.id == currentValue ? 'selected' : ''}>${name}</option>`;
+                    if (!filter || name.toLowerCase().includes(filter)) {
+                        options += `<option value="${it.id}" ${it.id == currentValue ? 'selected' : ''}>${name}</option>`;
+                    }
                 });
                 select.innerHTML = options;
+                if (currentValue) select.value = currentValue;
             });
         }
 
@@ -147,20 +154,24 @@
             const div = document.createElement('div');
             div.className = 'ingredient-row';
             
-            // Création du select avec tous les items dispo
-            let options = '<option value="">-- Choisir --</option>';
-            Object.values(ITEMS).forEach(it => {
-                if (it.id == targetId) return; // Empêcher l'auto-référence
-                const name = DICTIONARY[it.id] || it.slug || `Item ${it.id}`;
-                options += `<option value="${it.id}" ${it.id == ingId ? 'selected' : ''}>${name}</option>`;
-            });
-
             div.innerHTML = `
-                <select class="ing-select">${options}</select>
+                <div class="recipe-search-box">
+                    <input type="text" class="ing-search" placeholder="Filtrer...">
+                    <select class="ing-select"></select>
+                </div>
                 <input type="number" class="ing-qty" value="${qty}" step="any" min="0">
                 <button class="qty-btn minus" onclick="this.parentElement.remove()" style="margin:0; width:24px; height:24px;">×</button>
             `;
             container.appendChild(div);
+
+            const searchInput = div.querySelector('.ing-search');
+            searchInput.addEventListener('input', refreshAllSelects);
+
+            if (ingId) {
+                const select = div.querySelector('.ing-select');
+                select.innerHTML = `<option value="${ingId}" selected>Chargement...</option>`;
+            }
+            refreshAllSelects();
         }
 
         addItemBtn.addEventListener('click', () => {

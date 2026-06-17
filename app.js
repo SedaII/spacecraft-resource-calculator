@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const itemSelect = document.getElementById('itemSelect');
-    const itemQty = document.getElementById('itemQty');
+    const itemSearch = document.getElementById('itemSearch');
+    const mainQtyDisplay = document.getElementById('mainQty');
     const addBtn = document.getElementById('addBtn');
     const clearBtn = document.getElementById('clearBtn');
     const mainMinus = document.getElementById('mainMinus');
@@ -12,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultArea = document.getElementById('resultArea');
 
     let buildQueue = {}; // Format: { id: quantity }
+    let currentMainQty = 1;
 
     // Gestion des sections pliantes
     document.querySelectorAll('.collapsible').forEach(header => {
@@ -32,10 +34,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Remplir le select au démarrage
-    function initSelect() {
+    function populateSelect(filter = '') {
+        const currentVal = itemSelect.value;
+        itemSelect.innerHTML = '';
+        const filterLower = filter.toLowerCase();
+
         const craftables = Object.values(ITEMS)
             .filter(item => item.recipe)
+            .filter(item => {
+                const name = (DICTIONARY[item.id] || item.slug).toLowerCase();
+                return name.includes(filterLower);
+            })
             .sort((a, b) => (DICTIONARY[a.id] || '').localeCompare(DICTIONARY[b.id] || ''));
+
+        if (craftables.length === 0 && filter === '') {
+            // Sécurité si aucune recette n'est trouvée
+        }
 
         craftables.forEach(item => {
             const opt = document.createElement('option');
@@ -43,6 +57,22 @@ document.addEventListener('DOMContentLoaded', () => {
             opt.textContent = DICTIONARY[item.id] || item.slug;
             itemSelect.appendChild(opt);
         });
+        if (currentVal) itemSelect.value = currentVal;
+    }
+
+    function initSelect() {
+        const resetMainQty = () => {
+            const id = itemSelect.value;
+            if (!id) return;
+            currentMainQty = ITEMS[id]?.stackQty || 1;
+            mainQtyDisplay.innerHTML = `<strong>${currentMainQty}</strong>`;
+        };
+
+        populateSelect();
+        resetMainQty();
+
+        itemSelect.addEventListener('change', resetMainQty);
+        itemSearch.addEventListener('input', (e) => populateSelect(e.target.value));
     }
 
     // Calcul récursif pour remonter aux ressources de base
@@ -58,6 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const qtyPerCraft = item?.stackQty || 1;
+            const craftsNeeded = multiplier / qtyPerCraft;
+
             if (!isRoot) {
                 intermediates[id] = (intermediates[id] || 0) + multiplier;
             }
@@ -65,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const recipe = item?.recipe;
             if (recipe) {
                 for (const [ingredientId, amount] of Object.entries(recipe)) {
-                    resolve(ingredientId, amount * multiplier);
+                    resolve(ingredientId, amount * craftsNeeded);
                 }
             }
         }
@@ -142,17 +175,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Événements
     addBtn.addEventListener('click', () => {
-        updateQueue(itemSelect.value, parseInt(itemQty.value) || 1);
+        updateQueue(itemSelect.value, currentMainQty);
     });
 
-    const updateMainQty = (amount) => {
-        let val = parseInt(itemQty.value) || 1;
-        val = Math.max(1, val + amount);
-        itemQty.value = val;
+    const updateMainQty = (multiplier) => {
+        const id = itemSelect.value;
+        const stackQty = ITEMS[id]?.stackQty || 1;
+        currentMainQty = Math.max(stackQty, currentMainQty + (multiplier * stackQty));
+        mainQtyDisplay.innerHTML = `<strong>${currentMainQty}</strong>`;
     };
 
     mainPlus.addEventListener('click', (e) => updateMainQty(getMultiplier(e)));
-    mainMinus.addEventListener('click', (e) => updateMainQty(-getMultiplier(e)));
+    mainMinus.addEventListener('click', (e) => updateMainQty(-1 * getMultiplier(e)));
 
     mainPlus.addEventListener('contextmenu', (e) => {
         e.preventDefault();
@@ -179,8 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
             delete buildQueue[id];
             render();
         } else if (button.classList.contains('qty-btn')) {
-            const amount = getMultiplier(e);
-            updateQueue(id, button.classList.contains('plus') ? amount : -amount);
+            const multiplier = getMultiplier(e);
+            const stackQty = ITEMS[id]?.stackQty || 1;
+            const delta = (button.classList.contains('plus') ? multiplier : -multiplier) * stackQty;
+            updateQueue(id, delta);
         }
     });
 
@@ -190,7 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) {
             e.preventDefault();
             const id = btn.dataset.id;
-            updateQueue(id, btn.classList.contains('plus') ? 10 : -10);
+            const stackQty = ITEMS[id]?.stackQty || 1;
+            updateQueue(id, (btn.classList.contains('plus') ? 10 : -10) * stackQty);
         }
     });
 

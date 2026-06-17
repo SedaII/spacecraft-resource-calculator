@@ -1,10 +1,25 @@
+/* Variables Globales */
 :root {
     --primary: #334155;
-    --danger: #334155;
+    --primary-hover: #0f172a;
+    --danger: #b91c1c;
     --bg: #f8fafc;
+    --bg-alt: #f1f5f9;
     --card: #ffffff;
     --text: #1e293b;
     --border: #e2e8f0;
+    --success-bg: #f0fdf4;
+    --success-border: #bbf7d0;
+    --warning-bg: #fefce8;
+    --warning-border: #fef08a;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --radius: 8px;
+    --transition: all 0.2s ease;
+}
+
+/* Reset & Base */
+* {
+    box-sizing: border-box;
 }
 
 body {
@@ -16,13 +31,13 @@ body {
     margin: 0;
 }
 
+/* Layout */
 .container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     background: var(--card);
     padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
 }
 
 h1 {
@@ -46,52 +61,45 @@ h1 {
     gap: 0.4rem;
 }
 
-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-}
+/* Formulaires & Boutons */
+label { font-size: 0.9rem; font-weight: 600; }
 
-select, input, button {
+select, input, .btn-base {
     height: 42px;
     border: 1px solid var(--border);
-    border-radius: 6px;
     font-size: 1rem;
+    padding: 0 0.75rem;
+    border-radius: var(--radius);
+    transition: var(--transition);
 }
 
-button {
+button, .btn-base {
     background-color: var(--primary);
     color: white;
-    padding: 0 1.5rem;
+    padding: 0.6rem 1.8rem;
     cursor: pointer;
     font-weight: 600;
-    transition: background 0.2s;
     border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
 }
 
-button:hover {
-    background-color: #0f172a;
-}
+button:hover { background-color: var(--primary-hover); }
+button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
+/* Sections */
 .section {
     margin-top: 2rem;
     padding: 1.5rem;
-    border-radius: 8px;
 }
 
-.queue-section {
-    background-color: #f1f5f9;
-}
+.queue-section      { background-color: var(--bg-alt); }
+.components-section { background-color: var(--warning-bg); border: 1px solid var(--warning-border); }
+.result-section     { background-color: var(--success-bg); border: 1px solid var(--success-border); }
 
-.components-section {
-    background-color: #fefce8;
-    border: 1px solid #fef08a;
-}
-
-.result-section {
-    background-color: #f0fdf4;
-    border: 1px solid #bbf7d0;
-}
-
+/* Rows */
 .row {
     display: flex;
     justify-content: space-between;
@@ -104,6 +112,15 @@ button:hover {
     border-bottom: none;
 }
 
+/* Recherche & Filtrage */
+.search-input {
+    border-bottom: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    height: 32px !important;
+}
+
+/* Utilitaires de visibilité */
 .hidden {
     display: none !important;
 }
@@ -113,52 +130,40 @@ button:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0; /* Agrandit la zone de clic verticale */
-    margin: -0.5rem 0; /* Compense le padding pour ne pas décaler le reste */
 }
 
-.collapsible::after { content: '▼'; font-size: 1.2rem; opacity: 0.7; }
+.collapsible::after { content: '▼'; font-size: 1.2rem; opacity: 0.7; transition: transform 0.2s; }
 .collapsed .collapsible::after { content: '▶'; }
 .collapsed > *:not(.collapsible) { display: none !important; }
 
+/* Contrôles de Quantité */
 .qty-btn {
     width: 30px;
     height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 0;
     margin-left: 5px;
     background: var(--primary);
     color: white;
-    border: none;
-    border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
     user-select: none;
+    border-radius: 6px;
 }
 
-.qty-btn:hover {
-    background-color: #0f172a;
-}
+.qty-btn:hover { background-color: var(--primary-hover); }
 
+/* Actions spécifiques */
 .remove-btn {
     width: auto;
     height: auto;
-    padding: 5px 15px;
+    padding: 8px 20px;
     margin-top: 10px;
     font-size: 0.9rem;
 }
 
-.delete-btn {
-    margin-left: 15px !important;
-    border: none;
-}
+.delete-btn { margin-left: 15px !important; }
 
-.item-controls {
-    display: flex;
-    align-items: center;
-}
+.item-controls { display: flex; align-items: center; }
 
 .qty-value {
     margin: 0 10px;
@@ -167,17 +172,19 @@ button:hover {
     font-weight: bold;
 }
 
-.qty-input {
-    width: 50px;
-    text-align: center;
-    font-weight: bold;
-    border: none !important;
-    background: none !important;
-    height: 30px !important;
-    padding: 0 !important;
+.item-name { font-weight: 500; }
+
+.recipe-search-box { display: flex; flex-direction: column; }
+
+.ing-search {
+    height: 24px !important;
+    font-size: 0.75rem !important;
+    border-bottom: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
-/* Masquer les flèches par défaut du navigateur */
-.qty-input::-webkit-outer-spin-button,
-.qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.qty-input[type=number] { -moz-appearance: textfield; }
+.ing-select, #itemSelect {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}

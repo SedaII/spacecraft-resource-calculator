@@ -72,21 +72,29 @@ const ITEMS = {
     1: {
         "id": 1,
         "slug": "iron_ingot",
-        "isResource": true
+        "isResource": true,
+        "stackProduced": false,
+        "stackQty": 1
     },
     2: {
         "id": 2,
         "slug": "copper_ingot",
-        "isResource": true
+        "isResource": true,
+        "stackProduced": false,
+        "stackQty": 1
     },
     3: {
         "id": 3,
         "slug": "silicon_ingot",
-        "isResource": true
+        "isResource": true,
+        "stackProduced": false,
+        "stackQty": 1
     },
     4: {
         "id": 4,
         "slug": "drone",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             5: 1,
             6: 1,
@@ -98,6 +106,8 @@ const ITEMS = {
     5: {
         "id": 5,
         "slug": "motor",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             7: 5,
             8: 1,
@@ -107,6 +117,8 @@ const ITEMS = {
     6: {
         "id": 6,
         "slug": "microchip",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             10: 1
         }
@@ -114,6 +126,8 @@ const ITEMS = {
     7: {
         "id": 7,
         "slug": "magnetic_coil",
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             1: 1,
             9: 1,
@@ -124,30 +138,38 @@ const ITEMS = {
         "id": 8,
         "slug": "metal_plate",
         "isPrimitive": true,
+        "stackProduced": true,
+        "stackQty": 2,
         "recipe": {
-            1: 0.5
+            1: 1
         }
     },
     9: {
         "id": 9,
         "slug": "nut_and_bolt",
         "isPrimitive": true,
+        "stackProduced": true,
+        "stackQty": 8,
         "recipe": {
-            1: 0.125
+            1: 1
         }
     },
     10: {
         "id": 10,
         "slug": "semiconductor_substrate",
         "isPrimitive": true,
+        "stackProduced": true,
+        "stackQty": 4,
         "recipe": {
-            3: 0.25
+            3: 1
         }
     },
     11: {
         "id": 11,
         "slug": "silicone_gel",
         "isPrimitive": true,
+        "stackProduced": false,
+        "stackQty": 1,
         "recipe": {
             3: 1
         }
@@ -156,17 +178,21 @@ const ITEMS = {
         "id": 12,
         "slug": "electric_wire",
         "isPrimitive": true,
+        "stackProduced": true,
+        "stackQty": 4,
         "recipe": {
-            2: 0.25
+            2: 1
         }
     },
     13: {
         "id": 13,
         "slug": "stainless_steel_plate",
         "isPrimitive": true,
+        "stackProduced": true,
+        "stackQty": 2,
         "recipe": {
-            2: 0.5,
-            62: 1
+            2: 1,
+            62: 2
         }
     },
     14: {
