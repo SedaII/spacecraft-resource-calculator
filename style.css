@@ -104,18 +104,37 @@ button:hover {
     border-bottom: none;
 }
 
-.remove-btn {
-    background: none;
-    color: var(--danger);
-    font-size: 1.25rem;
-    padding: 0;
+.collapsible {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.collapsible::after { content: '▼'; font-size: 0.8rem; opacity: 0.5; }
+.collapsed .collapsible::after { content: '▶'; }
+.collapsed > div, .collapsed > button { display: none !important; }
+
+.qty-btn {
     width: 30px;
     height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0;
+    margin-left: 5px;
+    background: #e2e8f0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    user-select: none;
 }
 
-.remove-btn:hover {
-    background: #fee2e2;
+.qty-btn:hover { background: #cbd5e1; }
+.qty-btn.minus:hover { background: #fecaca; color: var(--danger); }
+
+.remove-btn {
+    background-color: var(--danger);
+    color: white;
 }

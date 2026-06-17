@@ -1,23 +1,32 @@
 // Dictionnaire : ID Anglais -> Label Français
 const DICTIONARY = {
-    "extractor": "Extracteur",
-    "foundry": "Fonderie",
-    "iron_plate": "Plaque de fer",
-    "iron_gear": "Engrenage en fer",
-    "iron_rod": "Tige de fer",
-    "cable": "Câble",
-    "copper_wire": "Fil de cuivre",
-    "iron_ingot": "Lingot de fer",
-    "copper_ingot": "Lingot de cuivre"
+    1: "Lingot de fer",
+    2: "Lingot de cuivre",
+    3: "Lingot de silicium",
+    4: "Drone",
+    5: "Moteur",
+    6: "Micropuce",
+    7: "Bobine magnétique",
+    8: "Plaque de métal",
+    9: "Écrou et boulon",
+    10: "Substrat semi-conducteur",
+    11: "Gel silicone",
+    12: "Fil électrique"
 };
 
-// Recettes : Uniquement avec les identifiants anglais
-const RECIPES = {
-    "extractor": { "iron_plate": 10, "iron_gear": 5, "cable": 2 },
-    "foundry": { "iron_plate": 5, "iron_rod": 8 },
-    "iron_plate": { "iron_ingot": 2 },
-    "iron_gear": { "iron_ingot": 3 },
-    "iron_rod": { "iron_ingot": 1 },
-    "cable": { "copper_wire": 2 },
-    "copper_wire": { "copper_ingot": 1 }
+// Base de données des objets : Regroupe le type et la recette
+const ITEMS = {
+    1: { id: 1, slug: "iron_ingot", isResource: true },
+    2: { id: 2, slug: "copper_ingot", isResource: true },
+    3: { id: 3, slug: "silicon_ingot", isResource: true },
+    4: { id: 4, slug: "drone", recipe: { 5: 1, 6: 1, 8: 1, 9: 6 } },
+    5: { id: 5, slug: "motor", recipe: { 8: 1, 7: 5, 11: 5 } },
+    6: { id: 6, slug: "microchip", recipe: { 10: 1 } },
+    7: { id: 7, slug: "magnetic_coil", recipe: { 1: 1, 9: 1, 12: 5 } },
+    // Composants primitifs
+    8: { id: 8, slug: "metal_plate", isPrimitive: true, recipe: { 1: 0.5 } },
+    9: { id: 9, slug: "nut_and_bolt", isPrimitive: true, recipe: { 1: 0.125 } },
+    10: { id: 10, slug: "semiconductor_substrate", isPrimitive: true, recipe: { 3: 0.25 } },
+    11: { id: 11, slug: "silicone_gel", isPrimitive: true, recipe: { 3: 1 } },
+    12: { id: 12, slug: "electric_wire", isPrimitive: true, recipe: { 2: 0.25 } }
 };

@@ -2,21 +2,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemSelect = document.getElementById('itemSelect');
     const itemQty = document.getElementById('itemQty');
     const addBtn = document.getElementById('addBtn');
+    const clearBtn = document.getElementById('clearBtn');
     const queueList = document.getElementById('queueList');
     const resourceTotals = document.getElementById('resourceTotals');
     const componentTotals = document.getElementById('componentTotals');
     const componentsArea = document.getElementById('componentsArea');
     const resultArea = document.getElementById('resultArea');
 
-    let buildQueue = [];
+    let buildQueue = {}; // Format: { id: quantity }
+
+    // Gestion des sections pliantes
+    document.querySelectorAll('.collapsible').forEach(header => {
+        header.addEventListener('click', () => {
+            header.parentElement.classList.toggle('collapsed');
+        });
+    });
+
+    function getMultiplier(e) {
+        if (e.ctrlKey || e.metaKey) return 100;
+        return 1;
+    }
+
+    function updateQueue(id, amount) {
+        buildQueue[id] = (buildQueue[id] || 0) + amount;
+        if (buildQueue[id] <= 0) delete buildQueue[id];
+        render();
+    }
 
     // Remplir le select au démarrage
     function initSelect() {
-        Object.keys(RECIPES).forEach(id => {
-            const option = document.createElement('option');
-            option.value = id;
-            option.textContent = DICTIONARY[id] || id;
-            itemSelect.appendChild(option);
+        const craftables = Object.values(ITEMS)
+            .filter(item => item.recipe)
+            .sort((a, b) => (DICTIONARY[a.id] || '').localeCompare(DICTIONARY[b.id] || ''));
+
+        craftables.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.textContent = DICTIONARY[item.id] || item.slug;
+            itemSelect.appendChild(opt);
         });
     }
 
@@ -26,18 +49,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const intermediates = {};
 
         function resolve(id, multiplier, isRoot = false) {
-            const recipe = RECIPES[id];
-            
-            // Si ce n'est pas l'objet final qu'on a ajouté à la liste
-            if (!isRoot) {
-                if (recipe) {
-                    intermediates[id] = (intermediates[id] || 0) + multiplier;
-                } else {
-                    baseResources[id] = (baseResources[id] || 0) + multiplier;
-                    return;
-                }
+            const item = ITEMS[id];
+
+            if (item?.isResource) {
+                baseResources[id] = (baseResources[id] || 0) + multiplier;
+                return;
             }
 
+            if (!isRoot) {
+                intermediates[id] = (intermediates[id] || 0) + multiplier;
+            }
+
+            const recipe = item?.recipe;
             if (recipe) {
                 for (const [ingredientId, amount] of Object.entries(recipe)) {
                     resolve(ingredientId, amount * multiplier);
@@ -45,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        buildQueue.forEach(item => resolve(item.id, item.qty, true));
+        Object.entries(buildQueue).forEach(([id, qty]) => resolve(id, qty, true));
         return { baseResources, intermediates };
     }
 
@@ -53,28 +76,43 @@ document.addEventListener('DOMContentLoaded', () => {
         // Vider la liste actuelle
         queueList.innerHTML = '';
         
-        buildQueue.forEach((item, index) => {
+        const entries = Object.entries(buildQueue);
+        clearBtn.style.display = entries.length > 0 ? 'block' : 'none';
+
+        entries.forEach(([id, qty]) => {
             const row = document.createElement('div');
             row.className = 'row';
             row.innerHTML = `
-                <span>${item.qty}x <strong>${DICTIONARY[item.id] || item.id}</strong></span>
-                <button class="remove-btn" data-index="${index}">&times;</button>
+                <span><strong>${qty}x</strong> ${DICTIONARY[id] || id}</span>
+                <div style="display:flex">
+                    <button class="qty-btn minus" data-id="${id}">-</button>
+                    <button class="qty-btn plus" data-id="${id}">+</button>
+                </div>
             `;
             queueList.appendChild(row);
         });
 
         // Calculer et afficher les résultats
-        if (buildQueue.length > 0) {
+        if (entries.length > 0) {
             const { baseResources, intermediates } = calculateTotals();
             
             // Affichage Composants Intermédiaires
             if (Object.keys(intermediates).length > 0) {
                 componentsArea.style.display = 'block';
                 componentTotals.innerHTML = '';
-                for (const [id, qty] of Object.entries(intermediates)) {
+                
+                // Tri : composants primitifs en premier
+                const sortedIntermediates = Object.keys(intermediates).sort((a, b) => {
+                    const aPrim = ITEMS[a]?.isPrimitive ? 1 : 0;
+                    const bPrim = ITEMS[b]?.isPrimitive ? 1 : 0;
+                    return bPrim - aPrim;
+                });
+
+                for (const id of sortedIntermediates) {
+                    const qty = intermediates[id];
                     componentTotals.innerHTML += `
                         <div class="row">
-                            <span>${DICTIONARY[id] || id}</span>
+                            <span>${ITEMS[id]?.isPrimitive ? '📦 ' : '⚙️ '}${DICTIONARY[id] || id}</span>
                             <span><strong>${qty}</strong></span>
                         </div>`;
                 }
@@ -89,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resourceTotals.innerHTML += `
                     <div class="row">
                         <span>${DICTIONARY[id] || id}</span>
-                        <span><strong>${qty}</strong></span>
+                        <span><strong>${Math.ceil(qty)}</strong></span>
                     </div>`;
             }
         } else {
@@ -100,18 +138,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Événements
     addBtn.addEventListener('click', () => {
-        buildQueue.push({
-            id: itemSelect.value,
-            qty: parseInt(itemQty.value) || 1
-        });
+        updateQueue(itemSelect.value, parseInt(itemQty.value) || 1);
+    });
+
+    clearBtn.addEventListener('click', () => {
+        buildQueue = {};
         render();
     });
 
     queueList.addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-btn')) {
-            const index = e.target.getAttribute('data-index');
-            buildQueue.splice(index, 1);
-            render();
+        const btn = e.target.closest('.qty-btn');
+        if (!btn) return;
+        const id = btn.dataset.id;
+        const amount = getMultiplier(e);
+        updateQueue(id, btn.classList.contains('plus') ? amount : -amount);
+    });
+
+    // Clic droit pour +/- 10
+    queueList.addEventListener('contextmenu', (e) => {
+        const btn = e.target.closest('.qty-btn');
+        if (btn) {
+            e.preventDefault();
+            const id = btn.dataset.id;
+            updateQueue(id, btn.classList.contains('plus') ? 10 : -10);
         }
     });
 
