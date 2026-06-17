@@ -22,7 +22,7 @@
                 <label>Quantité</label>
                 <div class="item-controls">
                     <button type="button" class="qty-btn" id="mainMinus">-</button>
-                    <span id="mainQty" class="qty-value"><strong>0</strong></span>
+                    <input type="number" id="mainQty" class="qty-input" value="1" min="1">
                     <button type="button" class="qty-btn" id="mainPlus">+</button>
                 </div>
             </div>
@@ -33,6 +33,11 @@
             <h3 class="collapsible">Liste de constructions</h3>
             <div id="queueList"></div>
             <button id="clearBtn" class="remove-btn hidden">Tout supprimer</button>
+        </div>
+
+        <div id="stockArea" class="section stock-section hidden">
+            <h3 class="collapsible">Stock de départ</h3>
+            <div id="stockTotals"></div>
         </div>
 
         <div id="componentsArea" class="section components-section hidden">

@@ -12,6 +12,8 @@
     --success-border: #bbf7d0;
     --warning-bg: #fefce8;
     --warning-border: #fef08a;
+    --info-bg: #eff6ff;
+    --info-border: #bfdbfe;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --radius: 8px;
     --transition: all 0.2s ease;
@@ -96,6 +98,7 @@ button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 }
 
 .queue-section      { background-color: var(--bg-alt); }
+.stock-section      { background-color: var(--info-bg); border: 1px solid var(--info-border); }
 .components-section { background-color: var(--warning-bg); border: 1px solid var(--warning-border); }
 .result-section     { background-color: var(--success-bg); border: 1px solid var(--success-border); }
 
@@ -162,11 +165,22 @@ button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .item-controls { display: flex; align-items: center; }
 
-.qty-value {
-    margin: 0 10px;
-    min-width: 40px;
+.qty-input {
+    width: 60px;
+    height: 30px;
+    margin: 0 5px;
     text-align: center;
     font-weight: bold;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: white;
+    -moz-appearance: textfield;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .item-name { font-weight: 500; }
