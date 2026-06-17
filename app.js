@@ -77,16 +77,18 @@ document.addEventListener('DOMContentLoaded', () => {
         queueList.innerHTML = '';
         
         const entries = Object.entries(buildQueue);
-        clearBtn.style.display = entries.length > 0 ? 'block' : 'none';
+        clearBtn.classList.toggle('hidden', entries.length === 0);
 
         entries.forEach(([id, qty]) => {
             const row = document.createElement('div');
             row.className = 'row';
             row.innerHTML = `
-                <span><strong>${qty}x</strong> ${DICTIONARY[id] || id}</span>
-                <div style="display:flex">
+                <span class="item-name">${DICTIONARY[id] || id}</span>
+                <div class="item-controls">
                     <button class="qty-btn minus" data-id="${id}">-</button>
+                    <span class="qty-value">${qty}</span>
                     <button class="qty-btn plus" data-id="${id}">+</button>
+                    <button class="qty-btn delete-btn" data-id="${id}" title="Supprimer la ligne">×</button>
                 </div>
             `;
             queueList.appendChild(row);
@@ -97,8 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const { baseResources, intermediates } = calculateTotals();
             
             // Affichage Composants Intermédiaires
-            if (Object.keys(intermediates).length > 0) {
-                componentsArea.style.display = 'block';
+            const hasIntermediates = Object.keys(intermediates).length > 0;
+            componentsArea.classList.toggle('hidden', !hasIntermediates);
+            
+            if (hasIntermediates) {
                 componentTotals.innerHTML = '';
                 
                 // Tri : composants primitifs en premier
@@ -116,12 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span><strong>${qty}</strong></span>
                         </div>`;
                 }
-            } else {
-                componentsArea.style.display = 'none';
             }
 
             // Affichage Ressources de Base
-            resultArea.style.display = 'block';
+            resultArea.classList.remove('hidden');
             resourceTotals.innerHTML = '';
             for (const [id, qty] of Object.entries(baseResources)) {
                 resourceTotals.innerHTML += `
@@ -131,8 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>`;
             }
         } else {
-            resultArea.style.display = 'none';
-            componentsArea.style.display = 'none';
+            resultArea.classList.add('hidden');
+            componentsArea.classList.add('hidden');
         }
     }
 
@@ -147,16 +149,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     queueList.addEventListener('click', (e) => {
-        const btn = e.target.closest('.qty-btn');
-        if (!btn) return;
-        const id = btn.dataset.id;
-        const amount = getMultiplier(e);
-        updateQueue(id, btn.classList.contains('plus') ? amount : -amount);
+        const button = e.target.closest('button');
+        if (!button) return;
+
+        const id = button.dataset.id;
+        
+        if (button.classList.contains('delete-btn')) {
+            delete buildQueue[id];
+            render();
+        } else if (button.classList.contains('qty-btn')) {
+            const amount = getMultiplier(e);
+            updateQueue(id, button.classList.contains('plus') ? amount : -amount);
+        }
     });
 
     // Clic droit pour +/- 10
     queueList.addEventListener('contextmenu', (e) => {
-        const btn = e.target.closest('.qty-btn');
+        const btn = e.target.closest('.qty-btn:not(.delete-btn)');
         if (btn) {
             e.preventDefault();
             const id = btn.dataset.id;
