@@ -200,7 +200,6 @@ const ITEMS = {
     14: {
         "id": 14,
         "slug": "structural_beam",
-        "isPrimitive": true,
         "stackProduced": false,
         "stackQty": 1,
         "recipe": {
