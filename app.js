@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemQty = document.getElementById('itemQty');
     const addBtn = document.getElementById('addBtn');
     const clearBtn = document.getElementById('clearBtn');
+    const mainMinus = document.getElementById('mainMinus');
+    const mainPlus = document.getElementById('mainPlus');
     const queueList = document.getElementById('queueList');
     const resourceTotals = document.getElementById('resourceTotals');
     const componentTotals = document.getElementById('componentTotals');
@@ -83,10 +85,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('div');
             row.className = 'row';
             row.innerHTML = `
-                <span class="item-name">${DICTIONARY[id] || id}</span>
+                <span>${DICTIONARY[id] || id}</span>
                 <div class="item-controls">
                     <button class="qty-btn minus" data-id="${id}">-</button>
-                    <span class="qty-value">${qty}</span>
+                    <span class="qty-value"><strong>${qty}</strong></span>
                     <button class="qty-btn plus" data-id="${id}">+</button>
                     <button class="qty-btn delete-btn" data-id="${id}" title="Supprimer la ligne">×</button>
                 </div>
@@ -141,6 +143,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Événements
     addBtn.addEventListener('click', () => {
         updateQueue(itemSelect.value, parseInt(itemQty.value) || 1);
+    });
+
+    const updateMainQty = (amount) => {
+        let val = parseInt(itemQty.value) || 1;
+        val = Math.max(1, val + amount);
+        itemQty.value = val;
+    };
+
+    mainPlus.addEventListener('click', (e) => updateMainQty(getMultiplier(e)));
+    mainMinus.addEventListener('click', (e) => updateMainQty(-getMultiplier(e)));
+
+    mainPlus.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        updateMainQty(10);
+    });
+
+    mainMinus.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        updateMainQty(-10);
     });
 
     clearBtn.addEventListener('click', () => {
