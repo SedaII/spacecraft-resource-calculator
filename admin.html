@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Spacecraft</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .container { max-width: 1200px; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .admin-table th, .admin-table td { padding: 10px; border: 1px solid var(--border); text-align: left; }
+        .admin-table input:not([type="checkbox"]), .admin-table select { width: 100%; height: 32px; border: 1px solid #ccc; padding: 2px 5px; box-sizing: border-box; }
+        .admin-table input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; display: block; margin: 0 auto; }
+        .recipe-container { display: flex; flex-direction: column; gap: 5px; }
+        .ingredient-row { display: grid; grid-template-columns: 2.5fr 80px auto; gap: 5px; align-items: flex-start; background: #f8fafc; padding: 5px; border-radius: 4px; border: 1px solid var(--border); }
+        .ingredient-row input { height: 28px !important; font-size: 0.85rem; }
+        .add-ing-btn { background: #64748b; font-size: 0.75rem; padding: 4px 8px; margin-top: 5px; width: 100%; }
+        .add-ing-btn:hover { background: #475569; }
+        .export-area { width: 100%; height: 300px; font-family: monospace; margin-top: 1rem; padding: 1rem; background: #1e293b; color: #f8fafc; border-radius: 8px; }
+        .btn-group { display: flex; gap: 5px; }
+        .tag { font-size: 0.7rem; padding: 2px 5px; border-radius: 4px; background: #e2e8f0; font-weight: bold; }
+        .nav { margin-bottom: 2rem; }
+        .nav a { color: var(--primary); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav"><a href="index.html">← Retour au calculateur</a></div>
+        <h1>Gestion des données (Items & Recettes)</h1>
+
+        <div class="section">
+            <h3 class="collapsible">Ajouter / Modifier les items</h3>
+            <div class="content">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom (Label)</th>
+                            <th>Slug</th>
+                            <th>Type</th>
+                            <th style="text-align: center;">Lot ?</th>
+                            <th style="width: 80px;">Qté Lot</th>
+                            <th>Recette (Ingrédients)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+                <button id="addItemBtn" style="margin-top: 1rem;">+ Ajouter un item</button>
+            </div>
+        </div>
+
+        <div class="section result-section">
+            <h3>Export des données</h3>
+            <p>Une fois vos modifications terminées, copiez le code ci-dessous et remplacez le contenu de votre fichier <strong>data.js</strong>.</p>
+            <button id="generateBtn">Générer le code data.js</button>
+            <textarea id="exportTextarea" class="export-area" readonly></textarea>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        const tableBody = document.getElementById('adminTableBody');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const exportArea = document.getElementById('exportTextarea');
+
+        // Gère l'affichage du dropdown pour un ingrédient spécifique
+        function renderIngDropdown(input, dropdown, hiddenInput, filter = '', targetId) {
+            dropdown.innerHTML = '';
+            const filterLower = filter.toLowerCase();
+
+            const items = Object.values(ITEMS)
+                .filter(it => it.id != targetId) // Ne pas s'inclure soi-même dans sa recette
+                .filter(it => (DICTIONARY[it.id] || '').toLowerCase().includes(filterLower))
+                .sort((a, b) => (DICTIONARY[a.id] || '').localeCompare(DICTIONARY[b.id] || ''));
+
+            items.forEach(it => {
+                const name = DICTIONARY[it.id] || it.slug;
+                const div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.textContent = name;
+                div.style.padding = '5px 10px';
+                div.style.fontSize = '0.8rem';
+                
+                div.addEventListener('click', () => {
+                    input.value = name;
+                    hiddenInput.value = it.id;
+                    dropdown.classList.add('hidden');
+                });
+                dropdown.appendChild(div);
+            });
+
+            dropdown.classList.toggle('hidden', items.length === 0);
+        }
+
+        // Ancienne fonction conservée pour compatibilité mais vidée car remplacée par la logique combo
+        function refreshAllSelects() {}
+
+        // Initialisation de la table
+        function renderAdminTable() {
+            tableBody.innerHTML = '';
+            Object.values(ITEMS).forEach(item => {
+                addRow(item);
+            });
+        }
+
+        function addRow(item = null) {
+            const id = item ? item.id : (Math.max(0, ...Object.keys(ITEMS).map(Number)) + 1);
+            const label = DICTIONARY[id] || "";
+            const slug = item ? item.slug : "";
+            
+            const isStack = item?.stackProduced || false;
+            const stackQty = item?.stackQty || 1;
+
+            let type = "component";
+            if (item?.isResource) type = "resource";
+            else if (item?.isPrimitive) type = "primitive";
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${id}</strong></td>
+                <td><input type="text" class="input-label" value="${label}" data-id="${id}"></td>
+                <td><input type="text" class="input-slug" value="${slug}" data-id="${id}"></td>
+                <td>
+                    <select class="input-type" data-id="${id}">
+                        <option value="resource" ${type === 'resource' ? 'selected' : ''}>Ressource (Lingot)</option>
+                        <option value="primitive" ${type === 'primitive' ? 'selected' : ''}>Composant Primitif</option>
+                        <option value="component" ${type === 'component' ? 'selected' : ''}>Composant Complexe</option>
+                    </select>
+                </td>
+                <td style="text-align: center;">
+                    <input type="checkbox" class="input-stack-produced" ${isStack ? 'checked' : ''} data-id="${id}">
+                </td>
+                <td>
+                    <input type="number" class="input-stack-qty" value="${stackQty}" min="1" data-id="${id}" ${!isStack ? 'disabled' : ''}>
+                </td>
+                <td>
+                    <div class="recipe-container" id="recipe-${id}"></div>
+                    <button class="add-ing-btn" onclick="addIngredientRow(${id})">+ Ajouter ingrédient</button>
+                </td>
+                <td>
+                    <button class="remove-btn delete-row-btn" data-id="${id}">×</button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+
+            // Synchronisation dynamique des données lors de la saisie
+            tr.querySelector('.input-label').addEventListener('input', (e) => {
+                DICTIONARY[id] = e.target.value;
+            });
+            tr.querySelector('.input-slug').addEventListener('input', (e) => {
+                if (ITEMS[id]) ITEMS[id].slug = e.target.value;
+            });
+
+            // Toggle stack qty input
+            const stackCheck = tr.querySelector('.input-stack-produced');
+            const stackInput = tr.querySelector('.input-stack-qty');
+            stackCheck.addEventListener('change', (e) => {
+                stackInput.disabled = !e.target.checked;
+            });
+
+            // Remplissage initial de la recette
+            if (item && item.recipe) {
+                for (const [ingId, qty] of Object.entries(item.recipe)) {
+                    addIngredientRow(id, ingId, qty);
+                }
+            }
+
+            if (!item) {
+                // Si c'est un nouvel item, on l'ajoute temporairement à l'objet local
+                ITEMS[id] = { id, slug: "" };
+                DICTIONARY[id] = "";
+            }
+        }
+
+        function addIngredientRow(targetId, ingId = "", qty = 1) {
+            const container = document.getElementById(`recipe-${targetId}`);
+            const div = document.createElement('div');
+            div.className = 'ingredient-row';
+            
+            div.innerHTML = `
+                <div class="recipe-search-box">
+                    <input type="text" class="ing-search-input" placeholder="Chercher ingrédient..." autocomplete="off" value="${DICTIONARY[ingId] || ''}">
+                    <div class="ing-dropdown dropdown-list hidden" style="font-size: 0.85rem;"></div>
+                    <input type="hidden" class="ing-id-val" value="${ingId}">
+                </div>
+                <input type="number" class="ing-qty" value="${qty}" step="any" min="0">
+                <button class="qty-btn minus" onclick="this.parentElement.remove()" style="margin:0; width:24px; height:24px;">×</button>
+            `;
+            container.appendChild(div);
+
+            const input = div.querySelector('.ing-search-input');
+            const dropdown = div.querySelector('.ing-dropdown');
+            const hiddenId = div.querySelector('.ing-id-val');
+
+            input.addEventListener('click', () => renderIngDropdown(input, dropdown, hiddenId, input.value, targetId));
+            input.addEventListener('input', (e) => renderIngDropdown(input, dropdown, hiddenId, e.target.value, targetId));
+            
+            // Fermeture si on clique ailleurs
+            document.addEventListener('click', (e) => {
+                if (!div.contains(e.target)) dropdown.classList.add('hidden');
+            });
+        }
+
+        addItemBtn.addEventListener('click', () => {
+            addRow();
+        });
+
+        tableBody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-row-btn')) {
+                if (!confirm("Supprimer cet item ?")) return;
+                const id = e.target.dataset.id;
+                delete ITEMS[id];
+                delete DICTIONARY[id];
+                e.target.closest('tr').remove();
+            }
+        });
+
+        generateBtn.addEventListener('click', () => {
+            const newDictionary = {};
+            const newItems = {};
+
+            document.querySelectorAll('#adminTableBody tr').forEach(tr => {
+                const id = tr.querySelector('.input-label').dataset.id;
+                const label = tr.querySelector('.input-label').value;
+                const slug = tr.querySelector('.input-slug').value;
+                const type = tr.querySelector('.input-type').value;
+                const recipeRows = tr.querySelectorAll('.ingredient-row');
+                const stackProduced = tr.querySelector('.input-stack-produced').checked;
+                const stackQty = parseInt(tr.querySelector('.input-stack-qty').value) || 1;
+
+                newDictionary[id] = label;
+                
+                const itemObj = { id: parseInt(id), slug: slug };
+                if (type === "resource") itemObj.isResource = true;
+                if (type === "primitive") itemObj.isPrimitive = true;
+                
+                itemObj.stackProduced = stackProduced;
+                itemObj.stackQty = stackQty;
+                
+                if (recipeRows.length > 0) {
+                    const idRecipe = {};
+                    recipeRows.forEach(row => {
+                        const ingId = row.querySelector('.ing-id-val').value;
+                        const ingQty = parseFloat(row.querySelector('.ing-qty').value);
+                        if (ingId && !isNaN(ingQty)) {
+                            idRecipe[ingId] = ingQty;
+                        }
+                    });
+                    if (Object.keys(idRecipe).length > 0) itemObj.recipe = idRecipe;
+                }
+                newItems[id] = itemObj;
+            });
+
+            const code = `// Dictionnaire : ID Anglais -> Label Français
+const DICTIONARY = ${JSON.stringify(newDictionary, null, 4).replace(/"(\d+)":/g, '$1:')};
+
+// Base de données des objets : Regroupe le type et la recette
+const ITEMS = ${JSON.stringify(newItems, null, 4).replace(/"(\d+)":/g, '$1:')};`;
+
+            exportArea.value = code;
+        });
+
+        // Gestion simple du pliage (reprise de app.js)
+        document.querySelectorAll('.collapsible').forEach(header => {
+            header.addEventListener('click', () => {
+                header.parentElement.classList.toggle('collapsed');
+            });
+        });
+
+        renderAdminTable();
+    </script>
+</body>
+</html>

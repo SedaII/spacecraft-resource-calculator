@@ -1,10 +1,25 @@
+/* Variables Globales */
 :root {
-    --primary: #2563eb;
-    --danger: #ef4444;
+    --primary: #334155;
+    --primary-hover: #0f172a;
+    --danger: #b91c1c;
     --bg: #f8fafc;
+    --bg-alt: #f1f5f9;
     --card: #ffffff;
     --text: #1e293b;
     --border: #e2e8f0;
+    --success-bg: #f0fdf4;
+    --success-border: #bbf7d0;
+    --warning-bg: #fefce8;
+    --warning-border: #fef08a;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --radius: 8px;
+    --transition: all 0.2s ease;
+}
+
+/* Reset & Base */
+* {
+    box-sizing: border-box;
 }
 
 body {
@@ -16,13 +31,13 @@ body {
     margin: 0;
 }
 
+/* Layout */
 .container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     background: var(--card);
     padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
 }
 
 h1 {
@@ -46,52 +61,45 @@ h1 {
     gap: 0.4rem;
 }
 
-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-}
+/* Formulaires & Boutons */
+label { font-size: 0.9rem; font-weight: 600; }
 
-select, input, button {
+select, input, .btn-base {
     height: 42px;
     border: 1px solid var(--border);
-    border-radius: 6px;
     font-size: 1rem;
+    padding: 0 0.75rem;
+    border-radius: var(--radius);
+    transition: var(--transition);
 }
 
-button {
+button, .btn-base {
     background-color: var(--primary);
     color: white;
-    padding: 0 1.5rem;
+    padding: 0.6rem 1.8rem;
     cursor: pointer;
     font-weight: 600;
-    transition: background 0.2s;
     border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
 }
 
-button:hover {
-    background-color: #1d4ed8;
-}
+button:hover { background-color: var(--primary-hover); }
+button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
+/* Sections */
 .section {
     margin-top: 2rem;
     padding: 1.5rem;
-    border-radius: 8px;
 }
 
-.queue-section {
-    background-color: #f1f5f9;
-}
+.queue-section      { background-color: var(--bg-alt); }
+.components-section { background-color: var(--warning-bg); border: 1px solid var(--warning-border); }
+.result-section     { background-color: var(--success-bg); border: 1px solid var(--success-border); }
 
-.components-section {
-    background-color: #fefce8;
-    border: 1px solid #fef08a;
-}
-
-.result-section {
-    background-color: #f0fdf4;
-    border: 1px solid #bbf7d0;
-}
-
+/* Rows */
 .row {
     display: flex;
     justify-content: space-between;
@@ -104,6 +112,16 @@ button:hover {
     border-bottom: none;
 }
 
+/* Recherche & Filtrage */
+.search-input {
+    width: 100%;
+}
+
+/* Utilitaires de visibilité */
+.hidden {
+    display: none !important;
+}
+
 .collapsible {
     cursor: pointer;
     display: flex;
@@ -111,30 +129,88 @@ button:hover {
     align-items: center;
 }
 
-.collapsible::after { content: '▼'; font-size: 0.8rem; opacity: 0.5; }
+.collapsible::after { content: '▼'; font-size: 1.2rem; opacity: 0.7; transition: transform 0.2s; }
 .collapsed .collapsible::after { content: '▶'; }
-.collapsed > div, .collapsed > button { display: none !important; }
+.collapsed > *:not(.collapsible) { display: none !important; }
 
+/* Contrôles de Quantité */
 .qty-btn {
     width: 30px;
     height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 0;
     margin-left: 5px;
-    background: #e2e8f0;
-    border: 1px solid var(--border);
-    border-radius: 4px;
+    background: var(--primary);
+    color: white;
     cursor: pointer;
     font-weight: bold;
     user-select: none;
+    border-radius: 6px;
 }
 
-.qty-btn:hover { background: #cbd5e1; }
-.qty-btn.minus:hover { background: #fecaca; color: var(--danger); }
+.qty-btn:hover { background-color: var(--primary-hover); }
 
+/* Actions spécifiques */
 .remove-btn {
-    background-color: var(--danger);
-    color: white;
+    width: auto;
+    height: auto;
+    padding: 8px 20px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.delete-btn { margin-left: 15px !important; }
+
+.item-controls { display: flex; align-items: center; }
+
+.qty-value {
+    margin: 0 10px;
+    min-width: 40px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.item-name { font-weight: 500; }
+
+.recipe-search-box {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-top: none;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: var(--shadow);
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.dropdown-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-alt);
+}
+
+.dropdown-item.active {
+    background-color: var(--bg-alt);
+    border-left: 3px solid var(--primary);
+}
+
+.ing-search {
+    height: 24px !important;
+    font-size: 0.75rem !important;
+    border-bottom: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
