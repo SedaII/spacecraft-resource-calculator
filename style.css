@@ -1,0 +1,121 @@
+:root {
+    --primary: #2563eb;
+    --danger: #ef4444;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --border: #e2e8f0;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 2rem;
+    margin: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--card);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    margin-top: 0;
+    color: var(--primary);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 1rem;
+}
+
+.controls {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: flex-end;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+select, input, button {
+    height: 42px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+button {
+    background-color: var(--primary);
+    color: white;
+    padding: 0 1.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+    border: none;
+}
+
+button:hover {
+    background-color: #1d4ed8;
+}
+
+.section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.queue-section {
+    background-color: #f1f5f9;
+}
+
+.components-section {
+    background-color: #fefce8;
+    border: 1px solid #fef08a;
+}
+
+.result-section {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.row:last-child {
+    border-bottom: none;
+}
+
+.remove-btn {
+    background: none;
+    color: var(--danger);
+    font-size: 1.25rem;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-btn:hover {
+    background: #fee2e2;
+}

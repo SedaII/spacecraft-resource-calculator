@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Craft Planner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Calculateur de Ressources</h1>
+
+        <div class="controls">
+            <div class="field">
+                <label for="itemSelect">Objet à crafter</label>
+                <select id="itemSelect"></select>
+            </div>
+            <div class="field">
+                <label for="itemQty">Quantité</label>
+                <input type="number" id="itemQty" value="1" min="1">
+            </div>
+            <button id="addBtn">Ajouter à la liste</button>
+        </div>
+
+        <div class="section queue-section">
+            <h3>Liste de construction</h3>
+            <div id="queueList"></div>
+        </div>
+
+        <div id="componentsArea" class="section components-section" style="display:none;">
+            <h3>Composants intermédiaires</h3>
+            <div id="componentTotals"></div>
+        </div>
+
+        <div id="resultArea" class="section result-section" style="display:none;">
+            <h3>Total des ressources de base (Lingots)</h3>
+            <div id="resourceTotals"></div>
+        </div>
+    </div>
+
+    <!-- Chargement des scripts : les données d'abord, la logique ensuite -->
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
