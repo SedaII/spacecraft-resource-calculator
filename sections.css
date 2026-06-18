@@ -1,0 +1,35 @@
+/* Sections spécifiques */
+.help-box {
+    background-color: var(--info-bg);
+    border: 1px solid var(--info-border);
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.queue-section      { background-color: var(--bg-alt); }
+.stock-section      { background-color: var(--info-bg); border: 1px solid var(--info-border); }
+.parent-crafts-section { background-color: var(--parent-bg); border: 1px solid var(--parent-border); }
+.components-section { background-color: var(--warning-bg); border: 1px solid var(--warning-border); }
+.result-section     { background-color: var(--success-bg); border: 1px solid var(--success-border); }
+
+/* Parent Tags */
+.parent-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.parent-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    color: var(--text);
+}

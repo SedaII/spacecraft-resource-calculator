@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spacecraft Calculator</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="forms.css">
+    <link rel="stylesheet" href="sections.css">
 </head>
 <body>
     <div class="container">
@@ -31,31 +34,38 @@
                     <button type="button" class="qty-btn" id="mainPlus">+</button>
                 </div>
             </div>
-            <button id="addBtn">Ajouter à la liste</button>
+            <button id="addBtn" class="add-btn">Ajouter à la liste</button>
         </div>
 
-        <div class="main-layout">
-            <div class="section queue-section">
-                <h3 class="collapsible">Liste de constructions</h3>
-                <div id="queueList"></div>
-                <button id="clearBtn" class="remove-btn hidden">Tout supprimer</button>
+        <div class="content-columns">
+            <div class="main-column">
+                <div class="section queue-section">
+                    <h3 class="collapsible">Liste de constructions</h3>
+                    <div id="queueList"></div>
+                    <button id="clearBtn" class="remove-btn hidden">Tout supprimer</button>
+                </div>
+                <div id="stockArea" class="section stock-section hidden">
+                    <h3 class="collapsible">Stock de départ</h3>
+                    <div id="stockTotals"></div>
+                    <button id="clearStockBtn" class="remove-btn hidden">Réinitialiser le stock</button>
+                </div>
             </div>
 
-            <div id="stockArea" class="section stock-section hidden">
-                <h3 class="collapsible">Stock de départ</h3>
-                <div id="stockTotals"></div>
-                <button id="clearStockBtn" class="remove-btn hidden">Réinitialiser le stock</button>
-            </div>
-
-            <div id="componentsArea" class="section components-section hidden">
-                <h3 class="collapsible">Composants intermédiaires</h3>
-                <p class="section-explanation"><small>L'icône 🔧 indique que ce composant est nécessaire à la fabrication d'un autre composant intermédiaire.</small></p>
-                <div id="componentTotals"></div>
-            </div>
-
-            <div id="resultArea" class="section result-section hidden">
-                <h3 class="collapsible">Total des ressources</h3>
-                <div id="resourceTotals"></div>
+            <div class="side-column">
+                <div id="parentCraftsArea" class="section parent-crafts-section hidden">
+                    <h3 class="collapsible">Composants parents (pour bâtiments)</h3>
+                    <p class="section-explanation"><small>Liste des composants directement nécessaires pour la file de construction.</small></p>
+                    <div id="parentCraftTotals"></div>
+                </div>
+                <div id="intermediateCraftsArea" class="section components-section hidden">
+                    <h3 class="collapsible">Composants intermédiaires (pour parents)</h3>
+                    <p class="section-explanation"><small>Liste des sous-composants nécessaires à la fabrication des composants parents ci-dessus.</small></p>
+                    <div id="intermediateCraftTotals"></div>
+                </div>
+                <div id="resultArea" class="section result-section hidden">
+                    <h3 class="collapsible">Total des ressources</h3>
+                    <div id="resourceTotals"></div>
+                </div>
             </div>
         </div>
     </div>

@@ -10,10 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearStockBtn = document.getElementById('clearStockBtn');
     const resourceTotals = document.getElementById('resourceTotals');
     const stockTotals = document.getElementById('stockTotals');
-    const componentTotals = document.getElementById('componentTotals');
+    const parentCraftTotals = document.getElementById('parentCraftTotals');
+    const intermediateCraftTotals = document.getElementById('intermediateCraftTotals');
     const stockArea = document.getElementById('stockArea');
-    const componentsArea = document.getElementById('componentsArea');
+    const parentCraftsArea = document.getElementById('parentCraftsArea');
+    const intermediateCraftsArea = document.getElementById('intermediateCraftsArea');
     const resultArea = document.getElementById('resultArea');
+    const sideColumn = document.querySelector('.side-column');
 
     const STORAGE_KEY = 'spacecraft_calculator_state';
 
@@ -187,45 +190,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function resolve(id, multiplier, isRoot = false, parentId = null) {
             const item = ITEMS[id];
-            if (!item) return;
+            if (!item || multiplier < 0) return;
+
+            // Toujours ajouter aux intermédiaires pour la liste de stock, même si qty=0
+            if (!isRoot) allIntermediates.add(id);
+
+            // Déduction du stock (valable pour root et composants)
+            const currentStock = virtualStock[id] || 0;
+            const fromStock = Math.min(multiplier, currentStock);
+            const needed = multiplier - fromStock;
+            virtualStock[id] = currentStock - fromStock;
 
             if (item.isResource) {
-                baseResources[id] = (baseResources[id] || 0) + multiplier;
+                if (needed > 0) baseResources[id] = (baseResources[id] || 0) + needed;
                 return;
             }
-
-            if (!isRoot) {
-                allIntermediates.add(id);
-            }
-
-            // Suivi des dépendances pour l'affichage
-            if (!isRoot && !remainingIntermediates[id]) {
-                remainingIntermediates[id] = { total: 0, requiredBy: {} };
-            }
-            
-            if (parentId && remainingIntermediates[id]) {
-                remainingIntermediates[id].requiredBy[parentId] = (remainingIntermediates[id].requiredBy[parentId] || 0) + multiplier;
-            }
-
-            let needed = multiplier;
-            if (!isRoot) {
-                const fromStock = Math.min(needed, virtualStock[id] || 0);
-                needed -= fromStock;
-                virtualStock[id] = (virtualStock[id] || 0) - fromStock;
-            }
-
-            if (needed <= 0) return;
 
             const qtyPerCraft = item.stackQty || 1;
             const craftsNeeded = Math.ceil(needed / qtyPerCraft);
             const producedQty = craftsNeeded * qtyPerCraft;
 
-            if (!isRoot) {
+            if (producedQty > 0 && !isRoot) {
+                if (!remainingIntermediates[id]) {
+                    remainingIntermediates[id] = { total: 0, requiredBy: {} };
+                }
                 remainingIntermediates[id].total += producedQty;
+                
+                if (parentId) {
+                    remainingIntermediates[id].requiredBy[parentId] = 
+                        (remainingIntermediates[id].requiredBy[parentId] || 0) + producedQty;
+                }
             }
 
             if (item.recipe) {
                 for (const [ingredientId, amount] of Object.entries(item.recipe)) {
+                    // On continue la résolution même si craftsNeeded est 0 pour explorer l'arbre (allIntermediates)
                     resolve(ingredientId, amount * craftsNeeded, false, id);
                 }
             }
@@ -261,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Calculer et afficher les résultats
         if (entries.length > 0) {
+            sideColumn.classList.remove('hidden');
             const { baseResources, remainingIntermediates, allIntermediates } = calculateTotals();
             
             // Affichage Stock de départ
@@ -293,61 +293,90 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            // Affichage Composants Intermédiaires
-            const hasIntermediates = Object.keys(remainingIntermediates).length > 0;
-            componentsArea.classList.toggle('hidden', !hasIntermediates);
-            
-            if (hasIntermediates) {
-                componentTotals.innerHTML = '';
-                const buildQueueIds = Object.keys(buildQueue);
+            // Séparation des composants intermédiaires en deux listes
+            const buildQueueIds = Object.keys(buildQueue);
+            const parentCrafts = [];
+            const intermediateCrafts = [];
 
-                const sortedIntermediates = Object.keys(remainingIntermediates).sort((a, b) => {
-                    const isDirectA = Object.keys(remainingIntermediates[a].requiredBy).every(id => buildQueueIds.includes(id));
-                    const isDirectB = Object.keys(remainingIntermediates[b].requiredBy).every(id => buildQueueIds.includes(id));
+            for (const id in remainingIntermediates) {
+                const data = remainingIntermediates[id];
+                let qtyForBuildings = 0;
+                let qtyForIntermediates = 0;
 
-                    // Les composants finaux (directement pour la buildQueue) vont en bas (return 1)
-                    if (isDirectA !== isDirectB) return isDirectA ? 1 : -1;
+                for (const [pId, pQty] of Object.entries(data.requiredBy)) {
+                    if (buildQueueIds.includes(pId)) {
+                        qtyForBuildings += pQty;
+                    } else {
+                        qtyForIntermediates += pQty;
+                    }
+                }
 
+                if (qtyForBuildings > 0) parentCrafts.push({ id, qty: qtyForBuildings });
+                if (qtyForIntermediates > 0) intermediateCrafts.push({ id, qty: qtyForIntermediates });
+            }
+
+            // Fonction pour rendre une liste de composants
+            const renderComponentList = (list, container, showParentTags) => {
+                container.innerHTML = '';
+                list.sort((aObj, bObj) => {
+                    const a = aObj.id, b = bObj.id;
                     const aPrim = ITEMS[a]?.isPrimitive ? 1 : 0;
                     const bPrim = ITEMS[b]?.isPrimitive ? 1 : 0;
-                    if (aPrim !== bPrim) return bPrim - aPrim; // Primitifs en premier au sein de chaque catégorie
+                    if (aPrim !== bPrim) return bPrim - aPrim;
                     return (DICTIONARY[a] || '').localeCompare(DICTIONARY[b] || '');
-                });
-
-                for (const id of sortedIntermediates) {
+                }).forEach(entry => {
+                    const id = entry.id;
                     const item = ITEMS[id];
                     const data = remainingIntermediates[id];
-                    const qty = data.total;
-                    
+                    const qty = entry.qty;
+
                     const roundedQty = (item?.stackProduced && item?.stackQty > 1)
                         ? Math.ceil(qty / item.stackQty) * item.stackQty
                         : Math.ceil(qty);
 
-                    // Filtrer : On ne garde que les parents qui ne sont PAS dans la buildQueue
-                    const intermediateParents = Object.entries(data.requiredBy)
-                        .filter(([pId]) => !buildQueueIds.includes(pId));
+                    let parentTagsHtml = '';
+                    if (showParentTags) {
+                        const parentTags = Object.entries(data.requiredBy)
+                            .filter(([pId]) => !buildQueueIds.includes(pId))
+                            .map(([pId, pQty]) => `<span class="parent-tag">${DICTIONARY[pId] || pId}</span>`)
+                            .join('');
+                        parentTagsHtml = `<div class="parent-info">${parentTags}</div>`;
+                    }
 
-                    const parentTags = intermediateParents
-                        .map(([pId, pQty]) => `<span class="parent-tag">${DICTIONARY[pId] || pId} (x${pQty})</span>`)
-                        .join('');
-
-                    componentTotals.innerHTML += `
+                    container.innerHTML += `
                         <div class="row">
                             <div class="item-column">
-                                <span class="item-name">${intermediateParents.length > 0 ? '🔧 ' : ''}${item?.isPrimitive ? '📦 ' : '⚙️ '}${DICTIONARY[id] || id}</span>
-                                <div class="parent-info">${parentTags}</div>
+                                <span class="item-name">${item?.isPrimitive ? '📦 ' : '⚙️ '}${DICTIONARY[id] || id}</span>
+                                ${parentTagsHtml}
                             </div>
                             <span><strong>${roundedQty}</strong></span>
                         </div>`;
-                }
+                });
+            };
+
+            // Affichage Composants Parents
+            parentCraftsArea.classList.toggle('hidden', parentCrafts.length === 0);
+            if (parentCrafts.length > 0) {
+                renderComponentList(parentCrafts, parentCraftTotals, false);
+            }
+
+            // Affichage Composants Intermédiaires
+            intermediateCraftsArea.classList.toggle('hidden', intermediateCrafts.length === 0);
+            if (intermediateCrafts.length > 0) {
+                renderComponentList(intermediateCrafts, intermediateCraftTotals, true);
             }
 
             // Affichage Ressources de Base
             resultArea.classList.remove('hidden');
             resourceTotals.innerHTML = '';
-            for (const [id, qty] of Object.entries(baseResources)) {
+            
+            const sortedResources = Object.keys(baseResources).sort((a, b) => {
+                return (DICTIONARY[a] || '').localeCompare(DICTIONARY[b] || '');
+            });
+
+            for (const id of sortedResources) {
+                const qty = baseResources[id];
                 const item = ITEMS[id];
-                // Même logique pour les ressources (ex: lingots d'acier produits par 3)
                 const roundedQty = (item?.stackProduced && item?.stackQty > 1)
                     ? Math.ceil(qty / item.stackQty) * item.stackQty
                     : Math.ceil(qty);
@@ -359,8 +388,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>`;
             }
         } else {
+            sideColumn.classList.add('hidden');
             resultArea.classList.add('hidden');
-            componentsArea.classList.add('hidden');
+            parentCraftsArea.classList.add('hidden');
+            intermediateCraftsArea.classList.add('hidden');
             stockArea.classList.add('hidden');
         }
     }
