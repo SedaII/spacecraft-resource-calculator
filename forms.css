@@ -1,0 +1,161 @@
+/* Formulaires & Boutons */
+.controls {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: flex-end;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+label { font-size: 0.9rem; font-weight: 600; }
+
+/* Style de base pour les inputs et selects */
+select, input:not([type="checkbox"]):not([type="radio"]), .btn-base {
+    height: var(--button-height);
+    border: 1px solid var(--border);
+    font-size: 1rem;
+    padding: 0 0.75rem;
+    border-radius: var(--radius);
+    transition: var(--transition);
+    background-color: white;
+}
+
+/* Style de base pour les boutons généraux */
+button:not(.qty-btn):not(.remove-btn):not(.delete-btn), .btn-base {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.6rem 1.8rem;
+    cursor: pointer;
+    font-weight: 600;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+button:not(.qty-btn):not(.remove-btn):not(.delete-btn):hover, .btn-base:hover { background-color: var(--primary-hover); }
+button:focus-visible, .btn-base:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Contrôles de Quantité */
+.item-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.qty-btn {
+    width: var(--button-height);
+    height: var(--button-height);
+    padding: 0;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    user-select: none;
+    border-radius: var(--radius);
+    border: none;
+    transition: var(--transition);
+}
+
+.qty-btn:hover { background-color: var(--primary-hover); }
+
+.qty-input {
+    width: 70px;
+    height: var(--button-height);
+    text-align: center;
+    font-weight: bold;
+    -moz-appearance: textfield;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Boutons d'action spécifiques */
+.add-btn {
+    /* Hérite des styles de boutons généraux */
+}
+
+.remove-btn {
+    background-color: var(--danger);
+    color: white;
+    padding: 8px 20px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.remove-btn:hover { background-color: #dc2626; }
+
+.delete-btn {
+    background-color: transparent;
+    color: var(--danger);
+    font-size: 1.5rem;
+    font-weight: normal;
+    width: var(--button-height);
+    height: var(--button-height);
+    padding: 0;
+    margin-left: 10px;
+    border: none;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.delete-btn:hover {
+    background-color: rgba(var(--danger-rgb), 0.1);
+    color: var(--danger);
+}
+
+/* Recherche & Filtrage */
+.recipe-search-box {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+}
+
+.dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-top: none;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: var(--shadow);
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.dropdown-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-alt);
+}
+
+.dropdown-item.active {
+    background-color: var(--bg-alt);
+    border-left: 3px solid var(--primary);
+}
