@@ -67,7 +67,10 @@ const DICTIONARY = {
     65: "Silicate",
     66: "Noyau d'elmérium",
     67: "Lingot de titane",
-    68: "Huile xénique"
+    68: "Huile xénique",
+    69: "Générateur central de base",
+    70: "Kit de déploiement de base",
+    71: "Centre de commandement simple"
 };
 
 // Base de données des objets : Regroupe le type et la recette
@@ -389,7 +392,7 @@ const ITEMS = {
         "slug": "crystal_matrix_c",
         "isPrimitive": true,
         "stackProduced": false,
-        "stackQty": 1,
+        "stackQty": 3,
         "recipe": {
             33: 1
         }
@@ -406,7 +409,7 @@ const ITEMS = {
         "slug": "crystal_matrix_m",
         "isPrimitive": true,
         "stackProduced": false,
-        "stackQty": 1,
+        "stackQty": 16,
         "recipe": {
             35: 1
         }
@@ -423,7 +426,7 @@ const ITEMS = {
         "slug": "crystal_matrix_h",
         "isPrimitive": true,
         "stackProduced": false,
-        "stackQty": 1,
+        "stackQty": 7,
         "recipe": {
             37: 1
         }
@@ -747,5 +750,33 @@ const ITEMS = {
         "isResource": true,
         "stackProduced": false,
         "stackQty": 1
+    },
+    69: {
+        "id": 69,
+        "slug": "basic_central_generator",
+        "stackProduced": false,
+        "stackQty": 1,
+    },
+    70: {
+        "id": 70,
+        "slug": "basic_deployment_kit",
+        "stackProduced": false,
+        "stackQty": 1,
+        "recipe": {
+            69: 1,
+            13: 4,
+            8: 20,
+            12: 20,
+            15: 20
+        }
+    },
+    71: {
+        "id": 71,
+        "slug": "simple_command_center",
+        "stackProduced": false,
+        "stackQty": 1,
+        "recipe": {
+            70: 1
+        }
     }
 };
