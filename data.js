@@ -737,7 +737,14 @@ const ITEMS = {
     180: { "id": 180, "slug": "vanadium_ore", "isResource": true },
     181: { "id": 181, "slug": "zirconium_ore", "isResource": true },
     182: { "id": 182, "slug": "zirconium_ingot", "isResource": true },
-    183: { "id": 183, "slug": "zirconium_nugget", "isResource": true }
+    183: { "id": 183, "slug": "zirconium_nugget", "isResource": true },
+    184: { "id": 184, "slug": "thermal_plate", "isResource": false, "stackProduced": true, "stackQty": 2 },
+    185: { "id": 185, "slug": "thermal_wool", "isResource": false, "stackProduced": true, "stackQty": 3 },
+    186: { "id": 186, "slug": "wiring_harness", "isResource": false, "stackProduced": false, "stackQty": 1 },
+    187: { "id": 187, "slug": "solid_explosive", "isResource": false, "stackProduced": true, "stackQty": 5 },
+    188: { "id": 188, "slug": "diffraction_grid", "isResource": false, "stackProduced": true, "stackQty": 5 },
+    189: { "id": 189, "slug": "small_steel_casing", "isResource": false, "stackProduced": false, "stackQty": 1 }
+
 };
 
 for (const id in ITEMS) {

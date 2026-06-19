@@ -83,6 +83,12 @@ const DICTIONARY = {
     181: "Minerai de zirconium",
     182: "Lingot de zirconium",
     183: "Pépite de zirconium",
+    184: "Plaque thermique",
+    185: "Laine thermique",
+    186: "Matériel de raccordement",
+    187: "Explosif solide",
+    188: "Réseau de diffraction",
+    189: "Petit carter en acier",
 
     // --- Bâtiments ---
     39: "Tour de commande",
