@@ -3,9 +3,9 @@ const BUILDINGS = {
     40: { "id": 40, "slug": "extractor", "recipes": [], "encombrement": 5, "energy": 20 },
     41: { "id": 41, "slug": "solar_plant", "recipes": [], "encombrement": 10, "energy": 10 },
     42: { "id": 42, "slug": "pylon", "recipes": [] },
-    43: { 
-        "id": 43, 
-        "slug": "foundry", 
+    43: {
+        "id": 43,
+        "slug": "foundry",
         "encombrement": 3,
         "energy": -4,
         "recipes": [

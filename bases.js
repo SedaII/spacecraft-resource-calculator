@@ -908,6 +908,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Bouton "Construire la base" ---
+    const buildBaseBtn = document.getElementById('buildBaseBtn');
+    if (buildBaseBtn) {
+        buildBaseBtn.addEventListener('click', () => {
+            const activeBase = bases.find(b => b.id === activeBaseId);
+            if (!activeBase) return;
+
+            // Construire la file : bâtiments avec une recette craftable dans ITEMS
+            const buildQueue = {};
+
+            // 1. Bâtiments planifiés
+            activeBase.buildings.forEach(bInstance => {
+                if (bInstance.qty <= 0) return;
+                const item = ITEMS[bInstance.id];
+                if (item && item.recipe) {
+                    buildQueue[bInstance.id] = (buildQueue[bInstance.id] || 0) + bInstance.qty;
+                }
+            });
+
+            // 2. Extracteurs issus des gisements assignés
+            activeBase.nodes.forEach(nodeInstance => {
+                if (!nodeInstance.extractorAssigned) return;
+                const isLiquid = (nodeInstance.id === 110 || nodeInstance.id === 111);
+                const extId = isLiquid ? 58 : 40;
+                const item = ITEMS[extId];
+                if (item && item.recipe) {
+                    buildQueue[extId] = (buildQueue[extId] || 0) + 1;
+                }
+            });
+
+            if (Object.keys(buildQueue).length === 0) {
+                alert("Aucun bâtiment constructible trouvé dans cette base.");
+                return;
+            }
+
+            // Passer la file au calculateur via sessionStorage (persisté dans le même onglet)
+            sessionStorage.setItem('spacecraft_import_queue', JSON.stringify(buildQueue));
+            window.location.href = 'index.html';
+        });
+    }
+
     // --- Gestion des événements de base ---
 
     // 1. Bouton créer une base

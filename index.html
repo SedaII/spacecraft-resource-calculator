@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="forms.css">
     <link rel="stylesheet" href="sections.css">
 </head>
+
 <body>
     <div class="container">
         <div class="nav">
@@ -26,7 +28,8 @@
             <div class="field">
                 <label for="itemSearch">Objet à crafter</label>
                 <div class="recipe-search-box">
-                    <input type="text" id="itemSearch" class="search-input" placeholder="Rechercher ou choisir un objet..." autocomplete="off">
+                    <input type="text" id="itemSearch" class="search-input"
+                        placeholder="Rechercher ou choisir un objet..." autocomplete="off">
                     <div id="itemsDropdown" class="dropdown-list hidden"></div>
                 </div>
             </div>
@@ -58,12 +61,14 @@
             <div class="side-column">
                 <div id="parentCraftsArea" class="section parent-crafts-section hidden">
                     <h3 class="collapsible">Composants parents (pour bâtiments)</h3>
-                    <p class="section-explanation"><small>Liste des composants directement nécessaires pour la file de construction.</small></p>
+                    <p class="section-explanation"><small>Liste des composants directement nécessaires pour la file de
+                            construction.</small></p>
                     <div id="parentCraftTotals"></div>
                 </div>
                 <div id="intermediateCraftsArea" class="section components-section hidden">
                     <h3 class="collapsible">Composants intermédiaires (pour parents)</h3>
-                    <p class="section-explanation"><small>Liste des sous-composants nécessaires à la fabrication des composants parents ci-dessus.</small></p>
+                    <p class="section-explanation"><small>Liste des sous-composants nécessaires à la fabrication des
+                            composants parents ci-dessus.</small></p>
                     <div id="intermediateCraftTotals"></div>
                 </div>
                 <div id="resultArea" class="section result-section hidden">
@@ -81,4 +86,5 @@
     <script src="nodes.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>

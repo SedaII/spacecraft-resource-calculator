@@ -517,5 +517,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Appeler initSelect une fois que tous les écouteurs sont configurés
     initSelect();
     loadData();
+
+    // Import depuis le Planificateur de bases (via sessionStorage)
+    const importedQueue = sessionStorage.getItem('spacecraft_import_queue');
+    if (importedQueue) {
+        try {
+            buildQueue = JSON.parse(importedQueue) || {};
+        } catch (e) {}
+        sessionStorage.removeItem('spacecraft_import_queue');
+    }
+
     render();
 });
