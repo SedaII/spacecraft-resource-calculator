@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificateur de Bases - Spacecraft</title>
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="forms.css">
+    <link rel="stylesheet" href="sections.css">
+    <link rel="stylesheet" href="bases.css">
+</head>
+
+<body>
+    <div class="container planner-container">
+        <div class="nav">
+            <a href="index.html">Calculateur</a>
+            <a href="bases.html" class="active">Gestion des bases</a>
+        </div>
+        <h1>Planificateur de bases spatiales</h1>
+
+        <div class="planner-layout">
+            <!-- Sidebar: Liste des bases -->
+            <aside class="sidebar section">
+                <h3>Mes Bases</h3>
+                <div class="base-actions">
+                    <button id="createBaseBtn" class="add-btn w-100">+ Nouvelle base</button>
+                </div>
+                <div id="baseList" class="base-list">
+                    <!-- Généré dynamiquement -->
+                </div>
+            </aside>
+
+            <!-- Main Panel: Configuration de la base sélectionnée -->
+            <main class="main-content">
+                <!-- Message si aucune base n'est sélectionnée -->
+                <div id="noBaseSelected" class="empty-state section">
+                    <p>Sélectionnez une base ou créez-en une nouvelle pour commencer à planifier.</p>
+                </div>
+
+                <!-- Détails de la base active -->
+                <div id="activeBaseArea" class="hidden">
+                    <div class="base-header section">
+                        <div class="base-rename-box">
+                            <label for="baseNameInput">Nom de la base</label>
+                            <div class="rename-controls">
+                                <input type="text" id="baseNameInput" class="search-input">
+                                <button id="deleteBaseBtn" class="remove-btn" style="margin: 0;">Supprimer la
+                                    base</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid-two-columns">
+                        <!-- Configuration : Gisements & Bâtiments -->
+                        <div class="config-column">
+                            <!-- Section Gisements -->
+                            <div class="section node-planner-section">
+                                <h3 class="collapsible">Gisements (Nodes)</h3>
+                                <p class="section-explanation"><small>Ajoutez des gisements et activez-les pour extraire
+                                        des ressources brutes.</small></p>
+
+                                <div class="add-control">
+                                    <div class="recipe-search-box" id="nodeSelectorBox">
+                                        <input type="text" id="nodeSearch" class="search-input"
+                                            placeholder="Rechercher un gisement..." autocomplete="off">
+                                        <div id="nodesDropdown" class="dropdown-list hidden"></div>
+                                    </div>
+                                    <button id="addNodeBtn" class="add-btn">Ajouter</button>
+                                </div>
+
+                                <div id="plannedNodesList" class="planned-items-list">
+                                    <!-- Liste des gisements planifiés -->
+                                </div>
+                            </div>
+
+                            <!-- Section Bâtiments -->
+                            <div class="section building-planner-section">
+                                <h3 class="collapsible">Bâtiments de production & stockage</h3>
+                                <p class="section-explanation"><small>Ajoutez des générateurs d'énergie, des fonderies,
+                                        des usines ou du stockage.</small></p>
+
+                                <div class="add-control">
+                                    <div class="recipe-search-box" id="buildingSelectorBox">
+                                        <input type="text" id="buildingSearch" class="search-input"
+                                            placeholder="Rechercher un bâtiment..." autocomplete="off">
+                                        <div id="buildingsDropdown" class="dropdown-list hidden"></div>
+                                    </div>
+                                    <button id="addBuildingBtn" class="add-btn">Ajouter</button>
+                                </div>
+
+                                <div id="plannedBuildingsList" class="planned-items-list">
+                                    <!-- Liste des bâtiments planifiés -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tableau de bord : Statistiques & Bilan horaire -->
+                        <div class="dashboard-column">
+                            <!-- Indicateurs globaux -->
+                            <div class="section dashboard-summary">
+                                <h3>Capacités de la Base</h3>
+
+                                <!-- Encombrement -->
+                                <div class="metric-group">
+                                    <div class="metric-label">
+                                        <span>Encombrement</span>
+                                        <span id="footprintValue">0 / 0 SU</span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div id="footprintProgressBar" class="progress-bar" style="width: 0%"></div>
+                                    </div>
+                                    <small id="footprintAlert" class="alert-text hidden">⚠️ Encombrement dépassé
+                                        !</small>
+                                </div>
+
+                                <!-- Énergie -->
+                                <div class="metric-group">
+                                    <div class="metric-label">
+                                        <span>Balance Énergétique</span>
+                                        <span id="energyBadge" class="badge positive">0 MW</span>
+                                    </div>
+                                </div>
+
+                                <!-- Stockages -->
+                                <div class="metric-group storage-metrics">
+                                    <div class="storage-row">
+                                        <span>Stockage Général :</span>
+                                        <strong id="storageGeneralVal">0 SU</strong>
+                                    </div>
+                                    <div class="storage-row">
+                                        <span>Stockage Liquide :</span>
+                                        <strong id="storageLiquidVal">0 L</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bilan de production horaire -->
+                            <div class="section result-section">
+                                <h3>Bilan horaire net</h3>
+                                <p class="section-explanation"><small>Solde net entre la production de vos
+                                        extracteurs/recettes et la consommation de vos usines.</small></p>
+                                <div id="netYieldsList">
+                                    <!-- Liste des rendements nets -->
+                                </div>
+                                <button id="buildBaseBtn" class="add-btn" style="width:100%; margin-bottom: 10px;">🏗️
+                                    Construire la base</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="dictionary.js"></script>
+    <script src="data.js"></script>
+    <script src="buildings.js"></script>
+    <script src="nodes.js"></script>
+    <script src="bases.js"></script>
+</body>
+
+</html>

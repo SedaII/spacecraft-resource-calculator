@@ -1,0 +1,360 @@
+/* Style spécifique pour le planificateur de bases */
+
+.planner-container {
+    max-width: 1500px;
+}
+
+.planner-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-top: 1.5rem;
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.base-actions {
+    margin-bottom: 1.5rem;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.base-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.base-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background-color: var(--bg-alt);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.base-item:hover {
+    background-color: var(--border);
+    color: var(--primary-hover);
+}
+
+.base-item.active {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    opacity: 0.8;
+}
+
+.base-header {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.base-rename-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rename-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.rename-controls input {
+    flex: 1;
+}
+
+/* Grids and Columns */
+.grid-two-columns {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+@media (max-width: 1200px) {
+    .grid-two-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+.config-column, .dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Controls inside section */
+.add-control {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.add-control select {
+    flex: 1;
+}
+
+.add-control .recipe-search-box {
+    flex: 1;
+}
+
+/* Planned lists */
+.planned-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.planner-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: var(--transition);
+}
+
+.planner-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-details {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-top: -4px;
+}
+
+.card-config-area {
+    background-color: var(--bg-alt);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recipe-spec {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.recipe-io {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+}
+
+.recipe-io-item {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Dashboard Summary Metrics */
+.dashboard-summary {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+}
+
+.metric-group {
+    margin-bottom: 1.5rem;
+}
+
+.metric-group:last-child {
+    margin-bottom: 0;
+}
+
+.metric-label {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+}
+
+/* Progress bar */
+.progress-bar-container {
+    height: 12px;
+    background-color: var(--bg-alt);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.progress-bar.warning {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.progress-bar.danger {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.alert-text {
+    color: var(--danger);
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    display: block;
+}
+
+/* Badges */
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.badge.positive {
+    background-color: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.badge.negative {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.storage-metrics {
+    background-color: var(--bg-alt);
+    padding: 12px;
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.storage-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+/* Toggle Switch / Small Chekbox Row */
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    user-select: none;
+}
+
+.checkbox-row input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Net Yield List styling */
+.yield-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.yield-item:last-child {
+    border-bottom: none;
+}
+
+.yield-name {
+    font-weight: 500;
+}
+
+.yield-value {
+    font-weight: bold;
+}
+
+.yield-value.positive {
+    color: #047857;
+}
+
+.yield-value.negative {
+    color: #b91c1c;
+}
+
+.yield-details {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    margin-top: 1px;
+}
+
+}
+
+.yield-value.warning {
+    color: #d97706;
+}
+
+.yield-warning-text {
+    color: #d97706;
+    font-weight: 500;
+}
+

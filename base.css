@@ -30,6 +30,35 @@ h1 {
     margin-bottom: 2rem;
 }
 
+/* Navigation */
+.nav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+}
+
+.nav a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.nav a:hover {
+    background-color: var(--bg-alt);
+    color: var(--primary-hover);
+}
+
+.nav a.active {
+    background-color: var(--primary);
+    color: white;
+}
+
 h3.collapsible {
     margin-top: 0;
     margin-bottom: 1rem;
