@@ -185,10 +185,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function calculateTotals() {
         const baseResources = {};
         const remainingIntermediates = {}; // Format: { id: { total: 0, requiredBy: { parentId: qty } } }
+        const rawIntermediates = {}; // Format: { id: { total: 0, requiredBy: { parentId: qty } } }
         const allIntermediates = new Set();
         const virtualStock = { ...initialStock };
 
-        function resolve(id, multiplier, isRoot = false, parentId = null) {
+        function resolve(id, multiplier, rawMultiplier, isRoot = false, parentId = null) {
             const item = ITEMS[id];
             if (!item || multiplier < 0) return;
 
@@ -201,14 +202,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const needed = multiplier - fromStock;
             virtualStock[id] = currentStock - fromStock;
 
+            const rawNeeded = rawMultiplier;
+
             if (item.isResource) {
                 if (needed > 0) baseResources[id] = (baseResources[id] || 0) + needed;
                 return;
             }
 
             const qtyPerCraft = item.stackQty || 1;
+            
             const craftsNeeded = Math.ceil(needed / qtyPerCraft);
             const producedQty = craftsNeeded * qtyPerCraft;
+
+            const rawCraftsNeeded = Math.ceil(rawNeeded / qtyPerCraft);
+            const rawProducedQty = rawCraftsNeeded * qtyPerCraft;
+
+            if (rawProducedQty > 0 && !isRoot) {
+                if (!rawIntermediates[id]) {
+                    rawIntermediates[id] = { total: 0, requiredBy: {} };
+                }
+                rawIntermediates[id].total += rawProducedQty;
+                if (parentId) {
+                    rawIntermediates[id].requiredBy[parentId] = 
+                        (rawIntermediates[id].requiredBy[parentId] || 0) + rawProducedQty;
+                }
+            }
 
             if (producedQty > 0 && !isRoot) {
                 if (!remainingIntermediates[id]) {
@@ -225,13 +243,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.recipe) {
                 for (const [ingredientId, amount] of Object.entries(item.recipe)) {
                     // On continue la résolution même si craftsNeeded est 0 pour explorer l'arbre (allIntermediates)
-                    resolve(ingredientId, amount * craftsNeeded, false, id);
+                    resolve(ingredientId, amount * craftsNeeded, amount * rawCraftsNeeded, false, id);
                 }
             }
         }
 
-        Object.entries(buildQueue).forEach(([id, qty]) => resolve(id, qty, true, null));
-        return { baseResources, remainingIntermediates, allIntermediates: Array.from(allIntermediates) };
+        Object.entries(buildQueue).forEach(([id, qty]) => resolve(id, qty, qty, true, null));
+        return { baseResources, remainingIntermediates, rawIntermediates, allIntermediates: Array.from(allIntermediates) };
     }
 
     function render() {
@@ -261,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Calculer et afficher les résultats
         if (entries.length > 0) {
             sideColumn.classList.remove('hidden');
-            const { baseResources, remainingIntermediates, allIntermediates } = calculateTotals();
+            const { baseResources, remainingIntermediates, rawIntermediates, allIntermediates } = calculateTotals();
             
             // Affichage Stock de départ
             const hasAllIntermediates = allIntermediates.length > 0;
@@ -298,16 +316,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const parentCrafts = [];
             const intermediateCrafts = [];
 
-            for (const id in remainingIntermediates) {
-                const data = remainingIntermediates[id];
+            const allKeys = new Set([
+                ...Object.keys(rawIntermediates),
+                ...Object.keys(remainingIntermediates)
+            ]);
+
+            for (const id of allKeys) {
+                const rawData = rawIntermediates[id];
+                const remainingData = remainingIntermediates[id];
+                
                 let qtyForBuildings = 0;
                 let qtyForIntermediates = 0;
 
-                for (const [pId, pQty] of Object.entries(data.requiredBy)) {
-                    if (buildQueueIds.includes(pId)) {
-                        qtyForBuildings += pQty;
-                    } else {
-                        qtyForIntermediates += pQty;
+                if (rawData) {
+                    for (const [pId, pQty] of Object.entries(rawData.requiredBy)) {
+                        if (buildQueueIds.includes(pId)) {
+                            qtyForBuildings += pQty;
+                        }
+                    }
+                }
+
+                if (remainingData) {
+                    for (const [pId, pQty] of Object.entries(remainingData.requiredBy)) {
+                        if (!buildQueueIds.includes(pId)) {
+                            qtyForIntermediates += pQty;
+                        }
                     }
                 }
 
@@ -327,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }).forEach(entry => {
                     const id = entry.id;
                     const item = ITEMS[id];
-                    const data = remainingIntermediates[id];
+                    const data = remainingIntermediates[id] || { requiredBy: {} };
                     const qty = entry.qty;
 
                     const roundedQty = (item?.stackProduced && item?.stackQty > 1)
